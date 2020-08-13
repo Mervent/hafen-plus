@@ -173,7 +173,7 @@ public class WItem extends Widget implements DTarget {
 				if (minf != null) {
 					double meter = minf.meter();
 					// if (itm.studytime > 0 && parent instanceof InventoryStudy) {
-				    // TODO: FixMe
+					// TODO: FixMe
 					if (itm.studytime > 0 && false) {
 						int timeleft = (int) (itm.studytime * (1.0 - meter));
 						int hoursleft = timeleft / 60;
@@ -222,9 +222,11 @@ public class WItem extends Widget implements DTarget {
 					ol.draw(g);
 			}
 			Double meter = item.meter > 0 ? Double.valueOf(item.meter / 100.0) : itemmeter.get();
-			g.chcolor(220, 60, 60, 255);
-			g.frect(Coord.z, new Coord((int) (sz.x / (100 / (meter * 100))), 4));
-			g.chcolor();
+			if ((meter != null) && (meter > 0)) {
+				g.chcolor(220, 60, 60, 255);
+				g.frect(Coord.z, new Coord((int) (sz.x / (100 / (meter * 100))), 4));
+				g.chcolor();
+			}
 
 			QBuff quality = item.quality();
 			if (quality != null && quality.qtex != null) {

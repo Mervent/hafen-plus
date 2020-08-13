@@ -26,9 +26,9 @@
 
 package haven;
 
-import amber.factories.*;
-import amber.ui.ArmorFactory;
-import amber.ui.WearFactory;
+import haven.factories.*;
+import haven.res.ui.tt.ArmorFactory;
+import haven.res.ui.tt.WearFactory;
 
 import java.lang.reflect.*;
 import java.util.*;

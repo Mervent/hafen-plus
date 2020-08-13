@@ -1,4 +1,4 @@
-package amber.ui;
+package haven.res.ui.tt;
 
 import haven.ItemInfo;
 import haven.ItemInfo.InfoFactory;

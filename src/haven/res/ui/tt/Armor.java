@@ -1,4 +1,4 @@
-package amber.ui;
+package haven.res.ui.tt;
 
 import haven.ItemInfo.Tip;
 import haven.Text;

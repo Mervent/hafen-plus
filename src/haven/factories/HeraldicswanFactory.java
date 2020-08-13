@@ -1,4 +1,4 @@
-package amber.factories;
+package haven.factories;
 
 import haven.ItemInfo;
 

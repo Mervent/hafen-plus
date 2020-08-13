@@ -1,14 +1,14 @@
-package amber.factories;
+package haven.factories;
 
 import haven.ItemInfo;
 
-public class BullmythFactory implements ItemInfo.InfoFactory {
-	public BullmythFactory() {
+public class GamekeepingFactory implements ItemInfo.InfoFactory {
+	public GamekeepingFactory() {
 	}
 
 	public ItemInfo build(ItemInfo.Owner var1, Object... var2) {
 		double var3 = ((Number) var2[1]).doubleValue();
-		String str = "Birth rate of livestock: +%d%%";
+		String str = "Quality of boars, deer and moose: +%d%%";
 		return new ItemInfo.AdHoc(var1, String.format(str, Math.round(var3 * 100.0D)));
 	}
 }

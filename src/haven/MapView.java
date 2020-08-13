@@ -412,11 +412,6 @@ public class MapView extends PView implements DTarget, Console.Directory {
 			tangl = anglorig + ((float) (c.x - dragorig.x) / 100.0f);
 		}
 
-		public void release() {
-			if (tfield > 100)
-				tangl = (float) (Math.PI * 0.5 * (Math.floor(tangl / (Math.PI * 0.5)) + 0.5));
-		}
-
 		private void chfield(float nf) {
 			tfield = nf;
 			tfield = Math.max(Math.min(tfield, sz.x * (float) Math.sqrt(2) / 8f), 50);

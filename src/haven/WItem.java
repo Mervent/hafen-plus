@@ -43,7 +43,7 @@ public class WItem extends Widget implements DTarget {
 	public static final Resource missing = Resource.local().loadwait("gfx/invobjs/missing");
 	public final GItem item;
 	public static final Color famountclr = new Color(24, 116, 205);
-	private static final Color qualitybg = new Color(20, 20, 20, 10);
+	private static final Color qualitybg = new Color(20, 20, 20, 255);
 	public static final Color[] wearclr = new Color[] { new Color(233, 0, 14), new Color(218, 128, 87),
 			new Color(246, 233, 87), new Color(145, 225, 60) };
 
@@ -311,6 +311,8 @@ public class WItem extends Widget implements DTarget {
 				item.wdgmsg("take", c);
 			return (true);
 		} else if (btn == 2) {
+			if (ui.modctrl && ui.modmeta)
+				wdgmsg("drop-identical-eq", this.item);
 			if (ui.modmeta)
 				wdgmsg("transfer-identical-eq", this.item);
 			return (true);

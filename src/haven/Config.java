@@ -28,6 +28,9 @@ package haven;
 
 import java.net.URL;
 import java.io.PrintStream;
+import java.util.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import static haven.Utils.getprop;
 
 public class Config {
@@ -56,10 +59,48 @@ public class Config {
 	public static String prefspec = "hafen";
 	public static final String confid = "";
 
+	// custom
+	public static List<LoginData> logins = new ArrayList<LoginData>();
+
 	static {
 		String p;
 		if ((p = getprop("haven.authck", null)) != null)
 			authck = Utils.hex2byte(p);
+
+		loadLogins();
+	}
+
+	private static void loadLogins() {
+		// try {
+		String loginsjson = Utils.getpref("logins", null);
+		if (loginsjson == null)
+			return;
+		JSONArray larr = new JSONArray(loginsjson);
+		for (int i = 0; i < larr.length(); i++) {
+			JSONObject l = larr.getJSONObject(i);
+			logins.add(new LoginData(l.get("name").toString(), l.get("pass").toString()));
+		}
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
+	}
+
+	public static void saveLogins() {
+		// try {
+		List<String> larr = new ArrayList<String>();
+		for (LoginData ld : logins) {
+			String ldjson = new JSONObject(ld, new String[] { "name", "pass" }).toString();
+			larr.add(ldjson);
+		}
+		String jsonobjs = "";
+		for (String s : larr)
+			jsonobjs += s + ",";
+		if (jsonobjs.length() > 0)
+			jsonobjs = jsonobjs.substring(0, jsonobjs.length() - 1);
+		Utils.setpref("logins", "[" + jsonobjs + "]");
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
 	}
 
 	private static int getint(String name, int def) {

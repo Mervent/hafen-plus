@@ -26,6 +26,7 @@
 
 package haven;
 
+import java.awt.*;
 import java.awt.event.KeyEvent;
 
 public class LoginScreen extends Widget {
@@ -47,7 +48,8 @@ public class LoginScreen extends Widget {
 		super(bg.sz());
 		setfocustab(true);
 		add(new Img(bg), Coord.z);
-		optbtn = adda(new Button(100, "Options"), 10, sz.y - 10, 0, 1);
+		optbtn = adda(new Button(100, "Options"), sz.x - 110, 40, 0, 1);
+		add(new LoginList(200, 29), new Coord(10, 10));
 	}
 
 	private static abstract class Login extends Widget {
@@ -58,7 +60,6 @@ public class LoginScreen extends Widget {
 
 	private class Pwbox extends Login {
 		TextEntry user, pass;
-		CheckBox savepass;
 
 		private Pwbox(String username, boolean save) {
 			setfocustab(true);
@@ -67,8 +68,6 @@ public class LoginScreen extends Widget {
 			add(new Label("Password", textf), new Coord(0, 50));
 			add(pass = new TextEntry(150, ""), new Coord(0, 70));
 			pass.pw = true;
-			add(savepass = new CheckBox("Remember me", true), new Coord(0, 100));
-			savepass.a = save;
 			if (user.text.equals(""))
 				setfocus(user);
 			else
@@ -81,7 +80,7 @@ public class LoginScreen extends Widget {
 		}
 
 		Object[] data() {
-			return (new Object[] { new AuthClient.NativeCred(user.text, pass.text), savepass.a });
+			return (new Object[] { new AuthClient.NativeCred(user.text, pass.text), false });
 		}
 
 		boolean enter() {
@@ -98,7 +97,6 @@ public class LoginScreen extends Widget {
 
 		public boolean globtype(char k, KeyEvent ev) {
 			if ((k == 'r') && ((ev.getModifiersEx() & (KeyEvent.META_DOWN_MASK | KeyEvent.ALT_DOWN_MASK)) != 0)) {
-				savepass.set(!savepass.a);
 				return (true);
 			}
 			return (false);
@@ -143,6 +141,96 @@ public class LoginScreen extends Widget {
 				return (true);
 			}
 			return (false);
+		}
+	}
+
+	public class LoginList extends Listbox<LoginData> {
+		private final Tex xicon = Text.render("\u2716", Color.RED).tex();
+		private int hover = -1;
+		private final static int ITEM_HEIGHT = 20;
+		private Coord lastMouseDown = Coord.z;
+
+		public LoginList(int w, int h) {
+			super(w, h, ITEM_HEIGHT);
+		}
+
+		@Override
+		protected void drawbg(GOut g) {
+			g.chcolor(0, 0, 0, 120);
+			g.frect(Coord.z, sz);
+			g.chcolor();
+		}
+
+		@Override
+		protected void drawsel(GOut g) {
+		}
+
+		@Override
+		protected LoginData listitem(int i) {
+			synchronized (Config.logins) {
+				return Config.logins.get(i);
+			}
+		}
+
+		@Override
+		protected int listitems() {
+			synchronized (Config.logins) {
+				return Config.logins.size();
+			}
+		}
+
+		@Override
+		public void mousemove(Coord c) {
+			setHoverItem(c);
+			super.mousemove(c);
+		}
+
+		@Override
+		public boolean mousewheel(Coord c, int amount) {
+			setHoverItem(c);
+			return super.mousewheel(c, amount);
+		}
+
+		private void setHoverItem(Coord c) {
+			if (c.x > 0 && c.x < sz.x && c.y > 0 && c.y < listitems() * ITEM_HEIGHT)
+				hover = c.y / ITEM_HEIGHT + sb.val;
+			else
+				hover = -1;
+		}
+
+		@Override
+		protected void drawitem(GOut g, LoginData item, int i) {
+			if (hover == i) {
+				g.chcolor(96, 96, 96, 255);
+				g.frect(Coord.z, g.br);
+				g.chcolor();
+			}
+			Tex tex = Text.render(item.name, Color.WHITE).tex();
+			int y = ITEM_HEIGHT / 2 - tex.sz().y / 2;
+			g.image(tex, new Coord(5, y));
+			g.image(xicon, new Coord(sz.x - 25, y));
+		}
+
+		@Override
+		public boolean mousedown(Coord c, int button) {
+			lastMouseDown = c;
+			return super.mousedown(c, button);
+		}
+
+		@Override
+		protected void itemclick(LoginData itm, int button) {
+			if (button == 1) {
+				if (lastMouseDown.x >= sz.x - 25 && lastMouseDown.x <= sz.x - 25 + 20) {
+					synchronized (Config.logins) {
+						Config.logins.remove(itm);
+						Config.saveLogins();
+					}
+				} else if (c.x < sz.x - 35) {
+					parent.wdgmsg("forget");
+					parent.wdgmsg("login", new Object[] { new AuthClient.NativeCred(itm.name, itm.pass), false });
+				}
+				super.itemclick(itm, button);
+			}
 		}
 	}
 

@@ -77,6 +77,7 @@ public class Bootstrap implements UI.Receiver, UI.Runner {
 			token = Utils.hex2byte(getpref("savedtoken", null));
 		String authserver = (Config.authserv == null) ? hostname : Config.authserv;
 		int authport = Config.authport;
+		AuthClient.Credentials creds = null;
 		retry: do {
 			byte[] cookie;
 			String acctname, tokenname;
@@ -122,7 +123,8 @@ public class Bootstrap implements UI.Receiver, UI.Runner {
 					continue retry;
 				}
 			} else {
-				AuthClient.Credentials creds;
+				AuthClient.NativeCred nativecreds;
+
 				ui.uimsg(1, "passwd", loginname, savepw);
 				while (true) {
 					Message msg;
@@ -133,6 +135,7 @@ public class Bootstrap implements UI.Receiver, UI.Runner {
 					if (msg.id == 1) {
 						if (msg.name == "login") {
 							creds = (AuthClient.Credentials) msg.args[0];
+							nativecreds = (AuthClient.NativeCred) msg.args[0];
 							savepw = (Boolean) msg.args[1];
 							loginname = creds.name();
 							break;
@@ -209,7 +212,17 @@ public class Bootstrap implements UI.Receiver, UI.Runner {
 				}
 			}
 		} while (true);
-		haven.error.ErrorHandler.setprop("usr", sess.username);
+
+		if (creds != null) {
+			LoginData ld = new LoginData(creds.name(), ((AuthClient.NativeCred) creds).pass);
+			synchronized (Config.logins) {
+				if (!Config.logins.contains(ld)) {
+					Config.logins.add(new LoginData(creds.name(), ((AuthClient.NativeCred) creds).pass));
+					Config.saveLogins();
+				}
+			}
+		}
+
 		return (sess);
 		// (new RemoteUI(sess, ui)).start();
 	}

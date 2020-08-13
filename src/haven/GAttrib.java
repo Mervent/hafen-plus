@@ -30,27 +30,29 @@ import java.util.*;
 import haven.render.*;
 
 public abstract class GAttrib {
-    public final Gob gob;
-	
-    public GAttrib(Gob gob) {
-	this.gob = gob;
-    }
-	
-    public void ctick(double dt) {
-    }
-    
-    public void dispose() {
-    }
+	public final Gob gob;
 
-    /* Private to Gob.java */
-    Collection<RenderTree.Slot> slots;
-    public void added(RenderTree.Slot slot) {
-	if(slots == null)
-	    slots = new ArrayList<>(1);
-	slots.add(slot);
-    }
-    public void removed(RenderTree.Slot slot) {
-	if(slots != null)
-	    slots.remove(slot);
-    }
+	public GAttrib(Gob gob) {
+		this.gob = gob;
+	}
+
+	public void ctick(double dt) {
+	}
+
+	public void dispose() {
+	}
+
+	/* Private to Gob.java */
+	Collection<RenderTree.Slot> slots;
+
+	public void added(RenderTree.Slot slot) {
+		if (slots == null)
+			slots = new ArrayList<>(1);
+		slots.add(slot);
+	}
+
+	public void removed(RenderTree.Slot slot) {
+		if (slots != null)
+			slots.remove(slot);
+	}
 }

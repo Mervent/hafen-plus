@@ -30,84 +30,76 @@ import haven.*;
 import java.util.*;
 
 public interface RenderList<R> {
-    public interface Slot<R> {
-	public GroupPipe state();
-	public R obj();
+	public interface Slot<R> {
+		public GroupPipe state();
 
-	@SuppressWarnings("unchecked")
-	public default <T> Slot<T> cast(Class<T> cl) {
-	    Object obj = obj();
-	    if((obj != null) && !cl.isInstance(obj()))
-		throw(new ClassCastException(obj.getClass().toString() + " => " + cl.toString()));
-	    return((Slot<T>)this);
-	}
-    }
+		public R obj();
 
-    public interface Adapter {
-	public Locked lock();
-	public Iterable<? extends Slot<?>> slots();
-	public <R> void add(RenderList<R> list, Class<? extends R> type);
-	public void remove(RenderList<?> list);
-
-	public default String stats() {return("N/A");}
-    }
-
-    public void add(Slot<? extends R> slot);
-    public void remove(Slot<? extends R> slot);
-    public void update(Slot<? extends R> slot);
-    public void update(Pipe group, int[] statemask);
-
-    public default void syncadd(Adapter tree, Class<? extends R> type) {
-	Collection<Slot<?>> initial;
-	try(Locked lk = tree.lock()) {
-	    for(Slot<?> slot : tree.slots()) {
-		if(type.isInstance(slot.obj())) {
-		    while(true) {
-			try {
-			    this.add(slot.cast(type));
-			    break;
-			} catch(Loading l) {
-			    try {
-				l.waitfor();
-			    } catch(InterruptedException e) {
-				Thread.currentThread().interrupt();
-				return;
-			    }
-			}
-		    }
+		@SuppressWarnings("unchecked")
+		public default <T> Slot<T> cast(Class<T> cl) {
+			Object obj = obj();
+			if ((obj != null) && !cl.isInstance(obj()))
+				throw (new ClassCastException(obj.getClass().toString() + " => " + cl.toString()));
+			return ((Slot<T>) this);
 		}
-	    }
-	    tree.add(this, type);
 	}
-    }
 
-    public default void asyncadd(Adapter tree, Class<? extends R> type) {
-	syncadd(tree, type);
-	/* XXX Does not preserve proper sequencing.
-	Collection<Slot<?>> initial;
-	try(Locked lk = tree.lock()) {
-	    initial = new ArrayList<>();
-	    tree.slots().forEach(initial::add);
-	    tree.add(this, type);
+	public interface Adapter {
+		public Locked lock();
+
+		public Iterable<? extends Slot<?>> slots();
+
+		public <R> void add(RenderList<R> list, Class<? extends R> type);
+
+		public void remove(RenderList<?> list);
+
+		public default String stats() {
+			return ("N/A");
+		}
 	}
-	new HackThread(() -> {
-		try {
-		    for(Slot<?> slot : initial) {
-			if(type.isInstance(slot.obj())) {
-			    while(true) {
-				try {
-				    this.add(slot.cast(type));
-				    break;
-				} catch(Loading l) {
-				    -* XXX: Make nonblocking *-
-				    l.waitfor();
+
+	public void add(Slot<? extends R> slot);
+
+	public void remove(Slot<? extends R> slot);
+
+	public void update(Slot<? extends R> slot);
+
+	public void update(Pipe group, int[] statemask);
+
+	public default void syncadd(Adapter tree, Class<? extends R> type) {
+		Collection<Slot<?>> initial;
+		try (Locked lk = tree.lock()) {
+			for (Slot<?> slot : tree.slots()) {
+				if (type.isInstance(slot.obj())) {
+					while (true) {
+						try {
+							this.add(slot.cast(type));
+							break;
+						} catch (Loading l) {
+							try {
+								l.waitfor();
+							} catch (InterruptedException e) {
+								Thread.currentThread().interrupt();
+								return;
+							}
+						}
+					}
 				}
-			    }
 			}
-		    }
-		} catch(InterruptedException e) {
+			tree.add(this, type);
 		}
-	}, "Initial adder").start();
-	*/
-    }
+	}
+
+	public default void asyncadd(Adapter tree, Class<? extends R> type) {
+		syncadd(tree, type);
+		/*
+		 * XXX Does not preserve proper sequencing. Collection<Slot<?>> initial;
+		 * try(Locked lk = tree.lock()) { initial = new ArrayList<>();
+		 * tree.slots().forEach(initial::add); tree.add(this, type); } new HackThread(()
+		 * -> { try { for(Slot<?> slot : initial) { if(type.isInstance(slot.obj())) {
+		 * while(true) { try { this.add(slot.cast(type)); break; } catch(Loading l) { -*
+		 * XXX: Make nonblocking *- l.waitfor(); } } } } } catch(InterruptedException e)
+		 * { } }, "Initial adder").start();
+		 */
+	}
 }

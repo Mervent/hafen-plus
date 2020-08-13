@@ -27,16 +27,18 @@
 package haven;
 
 public abstract class Moving extends GAttrib {
-    public Moving(Gob gob) {
-	super(gob);
-    }
-	
-    public void move(Coord2d c) {}
-	
-    public abstract Coord3f getc();
-    public abstract double getv();
+	public Moving(Gob gob) {
+		super(gob);
+	}
 
-    public Object staticp() {
-	return(null);
-    }
+	public void move(Coord2d c) {
+	}
+
+	public abstract Coord3f getc();
+
+	public abstract double getv();
+
+	public Object staticp() {
+		return (null);
+	}
 }

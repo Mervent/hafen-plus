@@ -32,84 +32,87 @@ import haven.render.gl.*;
 import javax.media.opengl.*;
 
 public class GLOffscreen implements Context {
-    public final GLProfile prof;
-    public final GLAutoDrawable buf;
-    private final Object dmon = new Object();
-    private final GLContext ctx;
-    private GLEnvironment benv = null;
-    private final Environment penv;
+	public final GLProfile prof;
+	public final GLAutoDrawable buf;
+	private final Object dmon = new Object();
+	private final GLContext ctx;
+	private GLEnvironment benv = null;
+	private final Environment penv;
 
-    public GLOffscreen() {
-	prof = GLProfile.getMaxProgrammableCore(true);
-	GLDrawableFactory df = GLDrawableFactory.getFactory(prof);
-	this.buf = df.createOffscreenAutoDrawable(null, caps(prof), null, 1, 1, null);
-	this.ctx = buf.getContext();
-	buf.addGLEventListener(new GLEventListener() {
-		public void display(GLAutoDrawable d) {
-		    redraw(d.getGL().getGL3());
-		}
+	public GLOffscreen() {
+		prof = GLProfile.getMaxProgrammableCore(true);
+		GLDrawableFactory df = GLDrawableFactory.getFactory(prof);
+		this.buf = df.createOffscreenAutoDrawable(null, caps(prof), null, 1, 1, null);
+		this.ctx = buf.getContext();
+		buf.addGLEventListener(new GLEventListener() {
+			public void display(GLAutoDrawable d) {
+				redraw(d.getGL().getGL3());
+			}
 
-		public void init(GLAutoDrawable d) {
-		}
+			public void init(GLAutoDrawable d) {
+			}
 
-		public void reshape(GLAutoDrawable d, int x, int y, int w, int h) {
-		}
+			public void reshape(GLAutoDrawable d, int x, int y, int w, int h) {
+			}
 
-		public void dispose(GLAutoDrawable d) {
-		}
-	    });
-	buf.display();
-	if(benv == null)
-	    throw(new AssertionError("offscreen display call was not honored"));
-	penv = new ProxyEnv();
-    }
-
-    private class ProxyEnv extends Environment.Proxy {
-	public Environment back() {return(benv);}
-
-	public void submit(Render r) {
-	    super.submit(r);
-	    synchronized(dmon) {
+			public void dispose(GLAutoDrawable d) {
+			}
+		});
 		buf.display();
-	    }
+		if (benv == null)
+			throw (new AssertionError("offscreen display call was not honored"));
+		penv = new ProxyEnv();
 	}
-    }
 
-    protected GLCapabilities caps(GLProfile prof) {
-	GLCapabilities ret = new GLCapabilities(prof);
-	ret.setDoubleBuffered(true);
-	ret.setAlphaBits(8);
-	ret.setRedBits(8);
-	ret.setGreenBits(8);
-	ret.setBlueBits(8);
-	return(ret);
-    }
+	private class ProxyEnv extends Environment.Proxy {
+		public Environment back() {
+			return (benv);
+		}
 
-    private void redraw(GL3 gl) {
-	// gl = new TraceGL3(gl, System.err);
-	if(benv == null)
-	    benv = new GLEnvironment(gl, ctx, Area.sized(Coord.z, new Coord(1, 1)));
-	if(benv.ctx != buf.getContext())
-	    throw(new AssertionError());
-	benv.process(gl);
-	benv.finish(gl);
-    }
-
-    public Environment env() {
-	return(penv);
-    }
-
-    public void dispose() {
-    }
-
-    private static GLOffscreen defctx = null;
-    public static GLOffscreen get() {
-	if(defctx == null) {
-	    synchronized(GLOffscreen.class) {
-		if(defctx == null)
-		    defctx = new GLOffscreen();
-	    }
+		public void submit(Render r) {
+			super.submit(r);
+			synchronized (dmon) {
+				buf.display();
+			}
+		}
 	}
-	return(defctx);
-    }
+
+	protected GLCapabilities caps(GLProfile prof) {
+		GLCapabilities ret = new GLCapabilities(prof);
+		ret.setDoubleBuffered(true);
+		ret.setAlphaBits(8);
+		ret.setRedBits(8);
+		ret.setGreenBits(8);
+		ret.setBlueBits(8);
+		return (ret);
+	}
+
+	private void redraw(GL3 gl) {
+		// gl = new TraceGL3(gl, System.err);
+		if (benv == null)
+			benv = new GLEnvironment(gl, ctx, Area.sized(Coord.z, new Coord(1, 1)));
+		if (benv.ctx != buf.getContext())
+			throw (new AssertionError());
+		benv.process(gl);
+		benv.finish(gl);
+	}
+
+	public Environment env() {
+		return (penv);
+	}
+
+	public void dispose() {
+	}
+
+	private static GLOffscreen defctx = null;
+
+	public static GLOffscreen get() {
+		if (defctx == null) {
+			synchronized (GLOffscreen.class) {
+				if (defctx == null)
+					defctx = new GLOffscreen();
+			}
+		}
+		return (defctx);
+	}
 }

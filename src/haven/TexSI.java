@@ -27,20 +27,20 @@
 package haven;
 
 public class TexSI implements Tex {
-    public final Tex parent;
-    public final Coord ul, br;
+	public final Tex parent;
+	public final Coord ul, br;
 
-    public TexSI(Tex parent, Coord ul, Coord br) {
-	this.parent = parent;
-	this.ul = ul;
-	this.br = br;
-    }
+	public TexSI(Tex parent, Coord ul, Coord br) {
+		this.parent = parent;
+		this.ul = ul;
+		this.br = br;
+	}
 
-    public Coord sz() {
-	return(br.sub(ul));
-    }
+	public Coord sz() {
+		return (br.sub(ul));
+	}
 
-    public void render(GOut g, Coord dul, Coord dbr, Coord tul, Coord tbr) {
-	parent.render(g, dul, dbr, tul.add(ul), tbr.add(ul));
-    }
+	public void render(GOut g, Coord dul, Coord dbr, Coord tul, Coord tbr) {
+		parent.render(g, dul, dbr, tul.add(ul), tbr.add(ul));
+	}
 }

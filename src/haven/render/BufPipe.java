@@ -31,69 +31,69 @@ import haven.render.State.Slot;
 import static haven.Utils.eq;
 
 public class BufPipe implements Pipe {
-    private State[] states;
+	private State[] states;
 
-    /* Implementation-side only */
-    public BufPipe(State[] states) {
-	this.states = states;
-    }
-
-    public BufPipe() {
-	this(new State[State.Slot.slots.idlist.length]);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T extends State> T get(Slot<T> slot) {
-	if(states.length <= slot.id)
-	    return(null);
-	return((T)states[slot.id]);
-    }
-
-    public <T extends State> void put(Slot<? super T> slot, T state) {
-	if(states.length <= slot.id)
-	    states = Arrays.copyOf(states, slot.id + 1);
-	states[slot.id] = state;
-    }
-
-    public State[] states() {
-	return(states);
-    }
-
-    public BufPipe copy() {
-	return(new BufPipe(Arrays.copyOf(states, states.length)));
-    }
-
-    public void copy(Pipe from) {
-	State[] states = from.states();
-	this.states = Arrays.copyOf(states, Math.max(states.length, this.states.length));
-    }
-
-    public int hashCode() {
-	return(Pipe.hashCode(states));
-    }
-
-    public boolean equals(Object o) {
-	if(!(o instanceof Pipe))
-	    return(false);
-	return(Pipe.equals(states, (o instanceof BufPipe) ? ((BufPipe)o).states : ((Pipe)o).states()));
-    }
-
-    public String toString() {
-	StringBuilder buf = new StringBuilder();
-	buf.append('[');
-	for(int i = 0; i < states.length; i++) {
-	    if(i > 0)
-		buf.append(", ");
-	    if((i % 5) == 0) {
-		buf.append(i);
-		buf.append('=');
-	    }
-	    if(states[i] == null)
-		buf.append("null");
-	    else
-		buf.append(states[i].toString());
+	/* Implementation-side only */
+	public BufPipe(State[] states) {
+		this.states = states;
 	}
-	buf.append(']');
-	return(buf.toString());
-    }
+
+	public BufPipe() {
+		this(new State[State.Slot.slots.idlist.length]);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends State> T get(Slot<T> slot) {
+		if (states.length <= slot.id)
+			return (null);
+		return ((T) states[slot.id]);
+	}
+
+	public <T extends State> void put(Slot<? super T> slot, T state) {
+		if (states.length <= slot.id)
+			states = Arrays.copyOf(states, slot.id + 1);
+		states[slot.id] = state;
+	}
+
+	public State[] states() {
+		return (states);
+	}
+
+	public BufPipe copy() {
+		return (new BufPipe(Arrays.copyOf(states, states.length)));
+	}
+
+	public void copy(Pipe from) {
+		State[] states = from.states();
+		this.states = Arrays.copyOf(states, Math.max(states.length, this.states.length));
+	}
+
+	public int hashCode() {
+		return (Pipe.hashCode(states));
+	}
+
+	public boolean equals(Object o) {
+		if (!(o instanceof Pipe))
+			return (false);
+		return (Pipe.equals(states, (o instanceof BufPipe) ? ((BufPipe) o).states : ((Pipe) o).states()));
+	}
+
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append('[');
+		for (int i = 0; i < states.length; i++) {
+			if (i > 0)
+				buf.append(", ");
+			if ((i % 5) == 0) {
+				buf.append(i);
+				buf.append('=');
+			}
+			if (states[i] == null)
+				buf.append("null");
+			else
+				buf.append(states[i].toString());
+		}
+		buf.append(']');
+		return (buf.toString());
+	}
 }

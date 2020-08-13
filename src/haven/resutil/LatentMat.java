@@ -31,38 +31,40 @@ import haven.render.*;
 import haven.render.sl.ShaderMacro;
 
 public class LatentMat extends State {
-    public static final Slot<LatentMat> slot = new Slot<>(Slot.Type.DRAW, LatentMat.class);
-    public final Pipe.Op mat;
-    public final String id, act;
+	public static final Slot<LatentMat> slot = new Slot<>(Slot.Type.DRAW, LatentMat.class);
+	public final Pipe.Op mat;
+	public final String id, act;
 
-    public LatentMat(Pipe.Op mat, String id) {
-	this.mat = mat;
-	this.id = id;
-	this.act = null;
-    }
-
-    public LatentMat(String act) {
-	this.mat = null;
-	this.id = null;
-	this.act = act;
-    }
-
-    public ShaderMacro shader() {return(null);}
-
-    public void apply(Pipe buf) {
-	if((mat != null) && (id != null))
-	    buf.put(slot, this);
-	if(act != null) {
-	    LatentMat cur = buf.get(slot);
-	    if((cur != null) && (cur.id == act))
-		cur.mat.apply(buf);
+	public LatentMat(Pipe.Op mat, String id) {
+		this.mat = mat;
+		this.id = id;
+		this.act = null;
 	}
-    }
 
-    @Material.ResName("latent")
-    public static class $latent implements Material.ResCons2 {
-	public Material.Res.Resolver cons(Resource res, Object... args) {
-	    return((buf, dynbuf) -> dynbuf.add(new LatentMat(((String)args[0]).intern())));
+	public LatentMat(String act) {
+		this.mat = null;
+		this.id = null;
+		this.act = act;
 	}
-    }
+
+	public ShaderMacro shader() {
+		return (null);
+	}
+
+	public void apply(Pipe buf) {
+		if ((mat != null) && (id != null))
+			buf.put(slot, this);
+		if (act != null) {
+			LatentMat cur = buf.get(slot);
+			if ((cur != null) && (cur.id == act))
+				cur.mat.apply(buf);
+		}
+	}
+
+	@Material.ResName("latent")
+	public static class $latent implements Material.ResCons2 {
+		public Material.Res.Resolver cons(Resource res, Object... args) {
+			return ((buf, dynbuf) -> dynbuf.add(new LatentMat(((String) args[0]).intern())));
+		}
+	}
 }

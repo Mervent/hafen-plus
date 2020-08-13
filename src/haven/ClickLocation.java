@@ -33,43 +33,46 @@ import haven.render.sl.ValBlock.Value;
 import static haven.render.sl.Type.*;
 
 public class ClickLocation<T extends Texture.Image> extends State {
-    public static final Slot<ClickLocation> tex = new Slot<>(Slot.Type.SYS, ClickLocation.class);
-    public static final FragData fragloc = new FragData(Type.VEC4, "fragloc", p -> p.get(tex).image, tex);
-    public static final Attribute vertex = new Attribute(VEC4, "location");
-    public final T image;
+	public static final Slot<ClickLocation> tex = new Slot<>(Slot.Type.SYS, ClickLocation.class);
+	public static final FragData fragloc = new FragData(Type.VEC4, "fragloc", p -> p.get(tex).image, tex);
+	public static final Attribute vertex = new Attribute(VEC4, "location");
+	public final T image;
 
-    public ClickLocation(T image) {
-	this.image = image;
-    }
+	public ClickLocation(T image) {
+		this.image = image;
+	}
 
-    public void apply(Pipe p) {p.put(tex, this);}
+	public void apply(Pipe p) {
+		p.put(tex, this);
+	}
 
-    public static final AutoVarying vertloc = new AutoVarying(VEC4) {
-	    protected Expression root(VertexContext vctx) {
-		return(vertex.ref());
-	    }
+	public static final AutoVarying vertloc = new AutoVarying(VEC4) {
+		protected Expression root(VertexContext vctx) {
+			return (vertex.ref());
+		}
 	};
 
-    public static Value fragloc(FragmentContext fctx) {
-	return(fctx.mainvals.ext(fragloc, () -> fctx.mainvals.new Value(Type.VEC4) {
-		public Expression root() {
-		    return(vertloc.ref());
-		}
+	public static Value fragloc(FragmentContext fctx) {
+		return (fctx.mainvals.ext(fragloc, () -> fctx.mainvals.new Value(Type.VEC4) {
+			public Expression root() {
+				return (vertloc.ref());
+			}
 
-		protected void cons2(Block blk) {
-		    blk.add(new LBinOp.Assign(fragloc.ref(), init));
-		}
-	    }));
-    }
-
-    private static final ShaderMacro shader = prog -> fragloc(prog.fctx).force();
-    public ShaderMacro shader() {
-	return(shader);
-    }
-
-    public static class LocData extends VertexBuf.FloatData {
-	public LocData(FloatBuffer data) {
-	    super(vertex, 4, data);
+			protected void cons2(Block blk) {
+				blk.add(new LBinOp.Assign(fragloc.ref(), init));
+			}
+		}));
 	}
-    }
+
+	private static final ShaderMacro shader = prog -> fragloc(prog.fctx).force();
+
+	public ShaderMacro shader() {
+		return (shader);
+	}
+
+	public static class LocData extends VertexBuf.FloatData {
+		public LocData(FloatBuffer data) {
+			super(vertex, 4, data);
+		}
+	}
 }

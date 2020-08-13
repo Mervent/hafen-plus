@@ -29,16 +29,16 @@ package haven;
 import haven.render.*;
 
 public abstract class Drawable extends GAttrib implements Skeleton.HasPose, RenderTree.Node {
-    public Drawable(Gob gob) {
-	super(gob);
-    }
-	
-    public abstract Resource getres();
-    
-    public void gtick(Render g) {
-    }
+	public Drawable(Gob gob) {
+		super(gob);
+	}
 
-    public Skeleton.Pose getpose() {
-	return(null);
-    }
+	public abstract Resource getres();
+
+	public void gtick(Render g) {
+	}
+
+	public Skeleton.Pose getpose() {
+		return (null);
+	}
 }

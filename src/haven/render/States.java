@@ -32,217 +32,275 @@ import haven.render.sl.*;
 import haven.render.State.Slot;
 
 public abstract class States {
-    private States() {}
-
-    private abstract static class Builtin extends State {
-	public ShaderMacro shader() {return(null);}
-    }
-
-    public static final Slot<State> vxf = new Slot<State>(Slot.Type.SYS, State.class);
-
-    public static final Slot<Viewport> viewport = new Slot<Viewport>(Slot.Type.SYS, Viewport.class);
-    public static class Viewport extends Builtin {
-	public final Area area;
-
-	public Viewport(Area area) {
-	    this.area = area;
+	private States() {
 	}
 
-	public boolean equals(Object o) {
-	    return((o instanceof Viewport) && (((Viewport)o).area.equals(area)));
+	private abstract static class Builtin extends State {
+		public ShaderMacro shader() {
+			return (null);
+		}
 	}
 
-	public void apply(Pipe p) {p.put(viewport, this);}
+	public static final Slot<State> vxf = new Slot<State>(Slot.Type.SYS, State.class);
 
-	public String toString() {return(String.format("#<viewport %sx%s+%s+%s>", area.br.x - area.ul.x, area.br.y - area.ul.y, area.ul.x, area.ul.y));}
-    }
+	public static final Slot<Viewport> viewport = new Slot<Viewport>(Slot.Type.SYS, Viewport.class);
 
-    public static final Slot<Scissor> scissor = new Slot<Scissor>(Slot.Type.SYS, Scissor.class);
-    public static class Scissor extends Builtin {
-	public final Area area;
+	public static class Viewport extends Builtin {
+		public final Area area;
 
-	public Scissor(Area area) {
-	    this.area = area;
+		public Viewport(Area area) {
+			this.area = area;
+		}
+
+		public boolean equals(Object o) {
+			return ((o instanceof Viewport) && (((Viewport) o).area.equals(area)));
+		}
+
+		public void apply(Pipe p) {
+			p.put(viewport, this);
+		}
+
+		public String toString() {
+			return (String.format("#<viewport %sx%s+%s+%s>", area.br.x - area.ul.x, area.br.y - area.ul.y, area.ul.x,
+					area.ul.y));
+		}
 	}
 
-	public boolean equals(Object o) {
-	    return((o instanceof Scissor) && (((Scissor)o).area.equals(area)));
+	public static final Slot<Scissor> scissor = new Slot<Scissor>(Slot.Type.SYS, Scissor.class);
+
+	public static class Scissor extends Builtin {
+		public final Area area;
+
+		public Scissor(Area area) {
+			this.area = area;
+		}
+
+		public boolean equals(Object o) {
+			return ((o instanceof Scissor) && (((Scissor) o).area.equals(area)));
+		}
+
+		public void apply(Pipe p) {
+			p.put(scissor, this);
+		}
+
+		public String toString() {
+			return (String.format("#<scissor %sx%s+%s+%s>", area.br.x - area.ul.x, area.br.y - area.ul.y, area.ul.x,
+					area.ul.y));
+		}
 	}
 
-	public void apply(Pipe p) {p.put(scissor, this);}
+	public static final Slot<Facecull> facecull = new Slot<Facecull>(Slot.Type.GEOM, Facecull.class);
 
-	public String toString() {return(String.format("#<scissor %sx%s+%s+%s>", area.br.x - area.ul.x, area.br.y - area.ul.y, area.ul.x, area.ul.y));}
-    }
+	public static class Facecull extends Builtin {
+		public final Mode mode;
 
-    public static final Slot<Facecull> facecull = new Slot<Facecull>(Slot.Type.GEOM, Facecull.class);
-    public static class Facecull extends Builtin {
-	public final Mode mode;
+		public enum Mode {
+			NONE, FRONT, BACK, BOTH,
+		}
 
-	public enum Mode {
-	    NONE, FRONT, BACK, BOTH,
+		public Facecull(Mode mode) {
+			if ((this.mode = mode) == null)
+				throw (new NullPointerException());
+		}
+
+		public Facecull() {
+			this(Mode.BACK);
+		}
+
+		public int hashCode() {
+			return (mode.hashCode());
+		}
+
+		public boolean equals(Object o) {
+			if (!(o instanceof Facecull))
+				return (false);
+			return (this.mode == ((Facecull) o).mode);
+		}
+
+		public void apply(Pipe p) {
+			p.put(facecull, (mode == Mode.NONE) ? null : this);
+		}
+
+		public String toString() {
+			return (String.format("#<facecull %s>", mode));
+		}
 	}
 
-	public Facecull(Mode mode) {
-	    if((this.mode = mode) == null)
-		throw(new NullPointerException());
+	public static final Slot<Depthtest> depthtest = new Slot<Depthtest>(Slot.Type.GEOM, Depthtest.class);
+
+	public static class Depthtest extends Builtin {
+		public final Test test;
+
+		public enum Test {
+			FALSE, TRUE, EQ, NEQ, LT, GT, LE, GE,
+		}
+
+		public Depthtest(Test test) {
+			if ((this.test = test) == null)
+				throw (new NullPointerException());
+		}
+
+		public Depthtest() {
+			this(Test.LT);
+		}
+
+		public int hashCode() {
+			return (test.hashCode());
+		}
+
+		public boolean equals(Object o) {
+			if (!(o instanceof Depthtest))
+				return (false);
+			return (this.test == ((Depthtest) o).test);
+		}
+
+		public void apply(Pipe p) {
+			p.put(depthtest, this);
+		}
+
+		public static final Pipe.Op none = p -> {
+			p.put(depthtest, null);
+		};
+
+		public String toString() {
+			return (String.format("#<depthtest %s>", test));
+		}
 	}
 
-	public Facecull() {
-	    this(Mode.BACK);
-	}
+	public static final State.StandAlone maskdepth = new State.StandAlone(Slot.Type.GEOM) {
+		public ShaderMacro shader() {
+			return (null);
+		}
 
-	public int hashCode() {
-	    return(mode.hashCode());
-	}
-
-	public boolean equals(Object o) {
-	    if(!(o instanceof Facecull))
-		return(false);
-	    return(this.mode == ((Facecull)o).mode);
-	}
-
-	public void apply(Pipe p) {p.put(facecull, (mode == Mode.NONE) ? null : this);}
-
-	public String toString() {return(String.format("#<facecull %s>", mode));}
-    }
-
-
-    public static final Slot<Depthtest> depthtest = new Slot<Depthtest>(Slot.Type.GEOM, Depthtest.class);
-    public static class Depthtest extends Builtin {
-	public final Test test;
-
-	public enum Test {
-	    FALSE, TRUE, EQ, NEQ,
-	    LT, GT, LE, GE,
-	}
-
-	public Depthtest(Test test) {
-	    if((this.test = test) == null)
-		throw(new NullPointerException());
-	}
-
-	public Depthtest() {
-	    this(Test.LT);
-	}
-
-	public int hashCode() {
-	    return(test.hashCode());
-	}
-
-	public boolean equals(Object o) {
-	    if(!(o instanceof Depthtest))
-		return(false);
-	    return(this.test == ((Depthtest)o).test);
-	}
-
-	public void apply(Pipe p) {p.put(depthtest, this);}
-
-	public static final Pipe.Op none = p -> {p.put(depthtest, null);};
-
-	public String toString() {return(String.format("#<depthtest %s>", test));}
-    }
-
-    public static final State.StandAlone maskdepth = new State.StandAlone(Slot.Type.GEOM) {
-	    public ShaderMacro shader() {return(null);}
-
-	    public String toString() {return(String.format("#<maskdepth>"));}
+		public String toString() {
+			return (String.format("#<maskdepth>"));
+		}
 	};
 
-    public static final Slot<Blending> blend = new Slot<Blending>(Slot.Type.SYS, Blending.class);
-    public static class Blending extends Builtin {
-	public final Function cfn, afn;
-	public final Factor csrc, cdst, asrc, adst;
-	public final FColor color;
+	public static final Slot<Blending> blend = new Slot<Blending>(Slot.Type.SYS, Blending.class);
 
-	public enum Function {
-	    ADD, SUB, RSUB, MIN, MAX;
-	}
-	public enum Factor {
-	    ZERO, ONE,
-	    SRC_COLOR, DST_COLOR, INV_SRC_COLOR, INV_DST_COLOR,
-	    SRC_ALPHA, DST_ALPHA, INV_SRC_ALPHA, INV_DST_ALPHA,
-	    CONST_COLOR, INV_CONST_COLOR, CONST_ALPHA, INV_CONST_ALPHA,
-	}
+	public static class Blending extends Builtin {
+		public final Function cfn, afn;
+		public final Factor csrc, cdst, asrc, adst;
+		public final FColor color;
 
-	public Blending(Function cfn, Factor csrc, Factor cdst, Function afn, Factor asrc, Factor adst, FColor color) {
-	    this.cfn = cfn; this.csrc = csrc; this.cdst = cdst;
-	    this.afn = afn; this.asrc = asrc; this.adst = adst;
-	    this.color = color;
-	}
+		public enum Function {
+			ADD, SUB, RSUB, MIN, MAX;
+		}
 
-	public Blending(Function cfn, Factor csrc, Factor cdst, Function afn, Factor asrc, Factor adst) {
-	    this(cfn, csrc, cdst, afn, asrc, adst, null);
-	}
-	public Blending(Factor csrc, Factor cdst, Factor asrc, Factor adst) {
-	    this(Function.ADD, csrc, cdst, Function.ADD, asrc, adst);
-	}
-	public Blending(Function fn, Factor src, Factor dst) {
-	    this(fn, src, dst, fn, src, dst);
-	}
-	public Blending(Factor src, Factor dst) {
-	    this(Function.ADD, src, dst);
-	}
-	public Blending() {
-	    this(Factor.SRC_ALPHA, Factor.INV_SRC_ALPHA);
-	}
+		public enum Factor {
+			ZERO, ONE, SRC_COLOR, DST_COLOR, INV_SRC_COLOR, INV_DST_COLOR, SRC_ALPHA, DST_ALPHA, INV_SRC_ALPHA, INV_DST_ALPHA,
+			CONST_COLOR, INV_CONST_COLOR, CONST_ALPHA, INV_CONST_ALPHA,
+		}
 
-	public int hashCode() {
-	    return(Objects.hash(cfn, csrc, cdst, afn, asrc, adst, color));
-	}
+		public Blending(Function cfn, Factor csrc, Factor cdst, Function afn, Factor asrc, Factor adst, FColor color) {
+			this.cfn = cfn;
+			this.csrc = csrc;
+			this.cdst = cdst;
+			this.afn = afn;
+			this.asrc = asrc;
+			this.adst = adst;
+			this.color = color;
+		}
 
-	public boolean equals(Object o) {
-	    if(!(o instanceof Blending))
-		return(false);
-	    Blending that = (Blending)o;
-	    return((this.cfn == that.cfn) && (this.csrc == that.csrc) && (this.cdst == that.cdst) &&
-		   (this.afn == that.afn) && (this.asrc == that.asrc) && (this.adst == that.adst) &&
-		   Utils.eq(this.color, that.color));
-	}
+		public Blending(Function cfn, Factor csrc, Factor cdst, Function afn, Factor asrc, Factor adst) {
+			this(cfn, csrc, cdst, afn, asrc, adst, null);
+		}
 
-	public void apply(Pipe p) {p.put(blend, this);}
+		public Blending(Factor csrc, Factor cdst, Factor asrc, Factor adst) {
+			this(Function.ADD, csrc, cdst, Function.ADD, asrc, adst);
+		}
 
-	public static final Pipe.Op none = p -> {p.put(blend, null);};
+		public Blending(Function fn, Factor src, Factor dst) {
+			this(fn, src, dst, fn, src, dst);
+		}
 
-	public String toString() {return(String.format("#<blending %s(%s, %s) %s(%s %s)>", cfn, csrc, cdst, afn, asrc, adst));}
-    }
+		public Blending(Factor src, Factor dst) {
+			this(Function.ADD, src, dst);
+		}
 
-    public static final Slot<LineWidth> linewidth = new Slot<LineWidth>(Slot.Type.GEOM, LineWidth.class);
-    public static class LineWidth extends Builtin {
-	public final float w;
+		public Blending() {
+			this(Factor.SRC_ALPHA, Factor.INV_SRC_ALPHA);
+		}
 
-	public LineWidth(float w) {
-	    this.w = w;
-	}
-	public LineWidth(double w) {this((float)w);}
-	public LineWidth(int w) {this((float)w);}
+		public int hashCode() {
+			return (Objects.hash(cfn, csrc, cdst, afn, asrc, adst, color));
+		}
 
-	public boolean equals(Object o) {
-	    return((o instanceof LineWidth) && (((LineWidth)o).w == this.w));
-	}
+		public boolean equals(Object o) {
+			if (!(o instanceof Blending))
+				return (false);
+			Blending that = (Blending) o;
+			return ((this.cfn == that.cfn) && (this.csrc == that.csrc) && (this.cdst == that.cdst) && (this.afn == that.afn)
+					&& (this.asrc == that.asrc) && (this.adst == that.adst) && Utils.eq(this.color, that.color));
+		}
 
-	public void apply(Pipe p) {p.put(linewidth, this);}
+		public void apply(Pipe p) {
+			p.put(blend, this);
+		}
 
-	public String toString() {return(String.format("#<linewidth %s>", w));}
-    }
+		public static final Pipe.Op none = p -> {
+			p.put(blend, null);
+		};
 
-    public static final Slot<DepthBias> depthbias = new Slot<DepthBias>(Slot.Type.GEOM, DepthBias.class);
-    public static class DepthBias extends Builtin {
-	public final float factor, units;
-
-	public DepthBias(float factor, float units) {
-	    this.factor = factor;
-	    this.units = units;
+		public String toString() {
+			return (String.format("#<blending %s(%s, %s) %s(%s %s)>", cfn, csrc, cdst, afn, asrc, adst));
+		}
 	}
 
-	public boolean equals(Object o) {
-	    if(!(o instanceof DepthBias))
-		return(false);
-	    DepthBias that = (DepthBias)o;
-	    return((this.factor == that.factor) && (this.units == that.units));
+	public static final Slot<LineWidth> linewidth = new Slot<LineWidth>(Slot.Type.GEOM, LineWidth.class);
+
+	public static class LineWidth extends Builtin {
+		public final float w;
+
+		public LineWidth(float w) {
+			this.w = w;
+		}
+
+		public LineWidth(double w) {
+			this((float) w);
+		}
+
+		public LineWidth(int w) {
+			this((float) w);
+		}
+
+		public boolean equals(Object o) {
+			return ((o instanceof LineWidth) && (((LineWidth) o).w == this.w));
+		}
+
+		public void apply(Pipe p) {
+			p.put(linewidth, this);
+		}
+
+		public String toString() {
+			return (String.format("#<linewidth %s>", w));
+		}
 	}
 
-	public void apply(Pipe p) {p.put(depthbias, this);}
+	public static final Slot<DepthBias> depthbias = new Slot<DepthBias>(Slot.Type.GEOM, DepthBias.class);
 
-	public String toString() {return(String.format("#<depthbias %s %s>", factor, units));}
-    }
+	public static class DepthBias extends Builtin {
+		public final float factor, units;
+
+		public DepthBias(float factor, float units) {
+			this.factor = factor;
+			this.units = units;
+		}
+
+		public boolean equals(Object o) {
+			if (!(o instanceof DepthBias))
+				return (false);
+			DepthBias that = (DepthBias) o;
+			return ((this.factor == that.factor) && (this.units == that.units));
+		}
+
+		public void apply(Pipe p) {
+			p.put(depthbias, this);
+		}
+
+		public String toString() {
+			return (String.format("#<depthbias %s %s>", factor, units));
+		}
+	}
 }

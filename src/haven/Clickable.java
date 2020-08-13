@@ -30,16 +30,18 @@ import haven.render.*;
 import haven.render.sl.ShaderMacro;
 
 public class Clickable extends State {
-    public static final Slot<Clickable> slot = new Slot<Clickable>(Slot.Type.DRAW, Clickable.class)
-	.instanced(Instancable.dummy());
+	public static final Slot<Clickable> slot = new Slot<Clickable>(Slot.Type.DRAW, Clickable.class)
+			.instanced(Instancable.dummy());
 
-    public Object[] clickargs(ClickData cd) {
-	return(new Object[0]);
-    }
+	public Object[] clickargs(ClickData cd) {
+		return (new Object[0]);
+	}
 
-    public ShaderMacro shader() {return(null);}
+	public ShaderMacro shader() {
+		return (null);
+	}
 
-    public void apply(Pipe p) {
-	p.put(slot, this);
-    }
+	public void apply(Pipe p) {
+		p.put(slot, this);
+	}
 }

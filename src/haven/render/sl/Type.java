@@ -27,47 +27,54 @@
 package haven.render.sl;
 
 public abstract class Type {
-    private static class Simple extends Type {
-	private final String name;
+	private static class Simple extends Type {
+		private final String name;
 
-	private Simple(String name) {
-	    this.name = name;
+		private Simple(String name) {
+			this.name = name;
+		}
+
+		public String name(Context ctx) {
+			return (name);
+		}
+
+		public String toString() {
+			return (name);
+		}
 	}
 
-	public String name(Context ctx) {return(name);}
-	public String toString() {return(name);}
-    }
-
-    public static class Sampler extends Simple {
-	private Sampler(String name) {
-	    super(name);
+	public static class Sampler extends Simple {
+		private Sampler(String name) {
+			super(name);
+		}
 	}
-    }
 
-    public static final Type VOID = new Simple("void");
-    public static final Type INT = new Simple("int");
-    public static final Type FLOAT = new Simple("float");
-    public static final Type VEC2 = new Simple("vec2");
-    public static final Type VEC3 = new Simple("vec3");
-    public static final Type VEC4 = new Simple("vec4");
-    public static final Type IVEC2 = new Simple("ivec2");
-    public static final Type IVEC3 = new Simple("ivec3");
-    public static final Type IVEC4 = new Simple("ivec4");
-    public static final Type MAT3 = new Simple("mat3");
-    public static final Type MAT4 = new Simple("mat4");
-    public static final Type SAMPLER1D = new Sampler("sampler1D");
-    public static final Type SAMPLER1DARRAY = new Sampler("sampler1DArray");
-    public static final Type SAMPLER2D = new Sampler("sampler2D");
-    public static final Type SAMPLER2DARRAY = new Sampler("sampler2DArray");
-    public static final Type SAMPLER2DSHADOW = new Sampler("sampler2DShadow");
-    public static final Type SAMPLER2DMS = new Sampler("sampler2DMS");
-    public static final Type SAMPLER2DMSARRAY = new Sampler("sampler2DMSArray");
-    public static final Type SAMPLER3D = new Sampler("sampler3D");
-    public static final Type SAMPLERCUBE = new Sampler("samplerCube");
-    public static final Type SAMPLERCUBEARRAY = new Sampler("samplerCubeArray");
-    public static final Type SAMPLERCUBESHADOW = new Sampler("samplerCubeShadow");
-    public static final Type SAMPLERBUFFER = new Sampler("samplerBuffer");
+	public static final Type VOID = new Simple("void");
+	public static final Type INT = new Simple("int");
+	public static final Type FLOAT = new Simple("float");
+	public static final Type VEC2 = new Simple("vec2");
+	public static final Type VEC3 = new Simple("vec3");
+	public static final Type VEC4 = new Simple("vec4");
+	public static final Type IVEC2 = new Simple("ivec2");
+	public static final Type IVEC3 = new Simple("ivec3");
+	public static final Type IVEC4 = new Simple("ivec4");
+	public static final Type MAT3 = new Simple("mat3");
+	public static final Type MAT4 = new Simple("mat4");
+	public static final Type SAMPLER1D = new Sampler("sampler1D");
+	public static final Type SAMPLER1DARRAY = new Sampler("sampler1DArray");
+	public static final Type SAMPLER2D = new Sampler("sampler2D");
+	public static final Type SAMPLER2DARRAY = new Sampler("sampler2DArray");
+	public static final Type SAMPLER2DSHADOW = new Sampler("sampler2DShadow");
+	public static final Type SAMPLER2DMS = new Sampler("sampler2DMS");
+	public static final Type SAMPLER2DMSARRAY = new Sampler("sampler2DMSArray");
+	public static final Type SAMPLER3D = new Sampler("sampler3D");
+	public static final Type SAMPLERCUBE = new Sampler("samplerCube");
+	public static final Type SAMPLERCUBEARRAY = new Sampler("samplerCubeArray");
+	public static final Type SAMPLERCUBESHADOW = new Sampler("samplerCubeShadow");
+	public static final Type SAMPLERBUFFER = new Sampler("samplerBuffer");
 
-    public abstract String name(Context ctx);
-    public void use(Context ctx) {}
+	public abstract String name(Context ctx);
+
+	public void use(Context ctx) {
+	}
 }

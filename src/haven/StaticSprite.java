@@ -30,52 +30,51 @@ import java.util.*;
 import haven.render.*;
 
 public class StaticSprite extends Sprite {
-    public final RenderTree.Node[] parts;
-    
-    public static final Factory fact = new Factory() {
-	    public Sprite create(Owner owner, Resource res, Message sdt) {
-		if((res.layer(FastMesh.MeshRes.class) != null) ||
-		   (res.layer(RenderLink.Res.class) != null))
-		    return(new StaticSprite(owner, res, sdt) {
-			    public String toString() {
-				return(String.format("#<static-sprite %s>", res.name));
-			    }
-			});
-		return(null);
-	    }
+	public final RenderTree.Node[] parts;
+
+	public static final Factory fact = new Factory() {
+		public Sprite create(Owner owner, Resource res, Message sdt) {
+			if ((res.layer(FastMesh.MeshRes.class) != null) || (res.layer(RenderLink.Res.class) != null))
+				return (new StaticSprite(owner, res, sdt) {
+					public String toString() {
+						return (String.format("#<static-sprite %s>", res.name));
+					}
+				});
+			return (null);
+		}
 	};
-    
-    public StaticSprite(Owner owner, Resource res, RenderTree.Node[] parts) {
-	super(owner, res);
-	this.parts = parts;
-    }
 
-    public StaticSprite(Owner owner, Resource res, RenderTree.Node part) {
-	this(owner, res, new RenderTree.Node[] {part});
-    }
-    
-    public StaticSprite(Owner owner, Resource res, Message sdt) {
-	this(owner, res, lsparts(res, sdt));
-    }
-    
-    public static RenderTree.Node[] lsparts(Resource res, Message sdt) {
-	int fl = sdt.eom()?0xffff0000:decnum(sdt);
-	Collection<RenderTree.Node> rl = new LinkedList<>();
-	for(FastMesh.MeshRes mr : res.layers(FastMesh.MeshRes.class)) {
-	    if((mr.mat != null) && ((mr.id < 0) || (((1 << mr.id) & fl) != 0)))
-		rl.add(mr.mat.get().apply(mr.m));
+	public StaticSprite(Owner owner, Resource res, RenderTree.Node[] parts) {
+		super(owner, res);
+		this.parts = parts;
 	}
-	for(RenderLink.Res lr : res.layers(RenderLink.Res.class)) {
-	    if((lr.id < 0) || (((1 << lr.id) & fl) != 0))
-		rl.add(lr.l.make());
-	}
-	if(res.layer(Resource.audio, "amb") != null)
-	    rl.add(new ActAudio.Ambience(res));
-	return(rl.toArray(new RenderTree.Node[0]));
-    }
 
-    public void added(RenderTree.Slot slot) {
-	for(RenderTree.Node p : parts)
-	    slot.add(p);
-    }
+	public StaticSprite(Owner owner, Resource res, RenderTree.Node part) {
+		this(owner, res, new RenderTree.Node[] { part });
+	}
+
+	public StaticSprite(Owner owner, Resource res, Message sdt) {
+		this(owner, res, lsparts(res, sdt));
+	}
+
+	public static RenderTree.Node[] lsparts(Resource res, Message sdt) {
+		int fl = sdt.eom() ? 0xffff0000 : decnum(sdt);
+		Collection<RenderTree.Node> rl = new LinkedList<>();
+		for (FastMesh.MeshRes mr : res.layers(FastMesh.MeshRes.class)) {
+			if ((mr.mat != null) && ((mr.id < 0) || (((1 << mr.id) & fl) != 0)))
+				rl.add(mr.mat.get().apply(mr.m));
+		}
+		for (RenderLink.Res lr : res.layers(RenderLink.Res.class)) {
+			if ((lr.id < 0) || (((1 << lr.id) & fl) != 0))
+				rl.add(lr.l.make());
+		}
+		if (res.layer(Resource.audio, "amb") != null)
+			rl.add(new ActAudio.Ambience(res));
+		return (rl.toArray(new RenderTree.Node[0]));
+	}
+
+	public void added(RenderTree.Slot slot) {
+		for (RenderTree.Node p : parts)
+			slot.add(p);
+	}
 }

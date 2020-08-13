@@ -30,57 +30,57 @@ import haven.*;
 import java.util.Arrays;
 
 public class Swizzle {
-    public static final Swizzle ID3 = id(3);
-    public static final Swizzle ID4 = id(4);
-    public static final Swizzle BGR = new Swizzle(2, 1, 0);
-    public static final Swizzle BGRA = new Swizzle(2, 1, 0, 3);
-    public final int[] perm;
+	public static final Swizzle ID3 = id(3);
+	public static final Swizzle ID4 = id(4);
+	public static final Swizzle BGR = new Swizzle(2, 1, 0);
+	public static final Swizzle BGRA = new Swizzle(2, 1, 0, 3);
+	public final int[] perm;
 
-    public Swizzle(int... perm) {
-	this.perm = perm;
-    }
-
-    public boolean idp() {
-	for(int i = 0; i < perm.length; i++) {
-	    if(perm[i] != i)
-		return(false);
+	public Swizzle(int... perm) {
+		this.perm = perm;
 	}
-	return(true);
-    }
 
-    public String toString() {
-	StringBuilder buf = new StringBuilder();
-	buf.append("#<swizzle ");
-	for(int i = 0; i < perm.length; i++) {
-	    if(i > 0)
-		buf.append(',');
-	    buf.append(perm[i]);
+	public boolean idp() {
+		for (int i = 0; i < perm.length; i++) {
+			if (perm[i] != i)
+				return (false);
+		}
+		return (true);
 	}
-	buf.append(">");
-	return(buf.toString());
-    }
 
-    public boolean equals(Object o) {
-	if(!(o instanceof Swizzle))
-	    return(false);
-	Swizzle that = (Swizzle)o;
-	if(this.perm.length != that.perm.length)
-	    return(false);
-	for(int i = 0; i < perm.length; i++) {
-	    if(this.perm[i] != that.perm[i])
-		return(false);
+	public String toString() {
+		StringBuilder buf = new StringBuilder();
+		buf.append("#<swizzle ");
+		for (int i = 0; i < perm.length; i++) {
+			if (i > 0)
+				buf.append(',');
+			buf.append(perm[i]);
+		}
+		buf.append(">");
+		return (buf.toString());
 	}
-	return(true);
-    }
 
-    public int hashCode() {
-	return(Arrays.hashCode(perm));
-    }
+	public boolean equals(Object o) {
+		if (!(o instanceof Swizzle))
+			return (false);
+		Swizzle that = (Swizzle) o;
+		if (this.perm.length != that.perm.length)
+			return (false);
+		for (int i = 0; i < perm.length; i++) {
+			if (this.perm[i] != that.perm[i])
+				return (false);
+		}
+		return (true);
+	}
 
-    public static Swizzle id(int nc) {
-	int[] perm = new int[nc];
-	for(int i = 0; i < nc; i++)
-	    perm[i] = i;
-	return(new Swizzle(perm));
-    }
+	public int hashCode() {
+		return (Arrays.hashCode(perm));
+	}
+
+	public static Swizzle id(int nc) {
+		int[] perm = new int[nc];
+		for (int i = 0; i < nc; i++)
+			perm[i] = i;
+		return (new Swizzle(perm));
+	}
 }

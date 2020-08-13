@@ -31,19 +31,25 @@ import static haven.render.sl.Cons.*;
 import static haven.render.sl.Type.*;
 
 public class VertexColor extends State {
-    public static final Slot<VertexColor> slot = new Slot<>(Slot.Type.DRAW, VertexColor.class);
-    public static final Attribute color = new Attribute(VEC4, "color");
-    public static final VertexColor instance = new VertexColor();
+	public static final Slot<VertexColor> slot = new Slot<>(Slot.Type.DRAW, VertexColor.class);
+	public static final Attribute color = new Attribute(VEC4, "color");
+	public static final VertexColor instance = new VertexColor();
 
-    private static final AutoVarying fcolor = new AutoVarying(VEC4) {
-	    protected Expression root(VertexContext vctx) {
-		return(color.ref());
-	    }
+	private static final AutoVarying fcolor = new AutoVarying(VEC4) {
+		protected Expression root(VertexContext vctx) {
+			return (color.ref());
+		}
 	};
 
-    private static final ShaderMacro shader = prog -> {
-	FragColor.fragcol(prog.fctx).mod(in -> mul(in, fcolor.ref()), 0);
-    };
-    public ShaderMacro shader() {return(shader);}
-    public void apply(Pipe p) {p.put(slot, this);}
+	private static final ShaderMacro shader = prog -> {
+		FragColor.fragcol(prog.fctx).mod(in -> mul(in, fcolor.ref()), 0);
+	};
+
+	public ShaderMacro shader() {
+		return (shader);
+	}
+
+	public void apply(Pipe p) {
+		p.put(slot, this);
+	}
 }

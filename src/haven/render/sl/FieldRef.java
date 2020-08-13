@@ -29,23 +29,23 @@ package haven.render.sl;
 import java.util.*;
 
 public class FieldRef extends Expression {
-    public final Expression val;
-    public final String el;
+	public final Expression val;
+	public final String el;
 
-    public FieldRef(Expression val, String el) {
-	this.val = val;
-	this.el = el;
-    }
+	public FieldRef(Expression val, String el) {
+		this.val = val;
+		this.el = el;
+	}
 
-    public void walk(Walker w) {
-	w.el(val);
-    }
+	public void walk(Walker w) {
+		w.el(val);
+	}
 
-    public void output(Output out) {
-	out.write("(");
-	val.output(out);
-	out.write(".");
-	out.write(el);
-	out.write(")");
-    }
+	public void output(Output out) {
+		out.write("(");
+		val.output(out);
+		out.write(".");
+		out.write(el);
+		out.write(")");
+	}
 }

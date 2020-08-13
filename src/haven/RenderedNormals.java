@@ -32,94 +32,98 @@ import static haven.render.sl.Cons.*;
 import static haven.Utils.eq;
 
 public class RenderedNormals extends State {
-    public static final Slot<RenderedNormals> slot = new Slot<>(Slot.Type.SYS, RenderedNormals.class);
-    public static final FragData fragnorm = new FragData(Type.VEC4, "fragnorm", p -> ((p.get(States.maskdepth.slot) == null) ? p.get(slot).img : null), slot, States.maskdepth.slot);
-    public final Texture.Image<?> img;
+	public static final Slot<RenderedNormals> slot = new Slot<>(Slot.Type.SYS, RenderedNormals.class);
+	public static final FragData fragnorm = new FragData(Type.VEC4, "fragnorm",
+			p -> ((p.get(States.maskdepth.slot) == null) ? p.get(slot).img : null), slot, States.maskdepth.slot);
+	public final Texture.Image<?> img;
 
-    public RenderedNormals(Texture.Image<?> img) {
-	this.img = img;
-    }
+	public RenderedNormals(Texture.Image<?> img) {
+		this.img = img;
+	}
 
-    public boolean equals(Object o) {
-	return((o instanceof RenderedNormals) &&
-	       eq(((RenderedNormals)o).img, this.img));
-    }
+	public boolean equals(Object o) {
+		return ((o instanceof RenderedNormals) && eq(((RenderedNormals) o).img, this.img));
+	}
 
-    private static final ShaderMacro shader = prog -> {
-	Homo3D.frageyen(prog.fctx);
-	ValBlock.Value val = prog.fctx.mainvals.ext(fragnorm, () -> prog.fctx.mainvals.new Value(Type.VEC4) {
-		public Expression root() {
-		    return(vec4(mul(add(Homo3D.frageyen(prog.fctx).depref(), l(1.0)), l(0.5)), l(1.0)));
-		}
+	private static final ShaderMacro shader = prog -> {
+		Homo3D.frageyen(prog.fctx);
+		ValBlock.Value val = prog.fctx.mainvals.ext(fragnorm, () -> prog.fctx.mainvals.new Value(Type.VEC4) {
+			public Expression root() {
+				return (vec4(mul(add(Homo3D.frageyen(prog.fctx).depref(), l(1.0)), l(0.5)), l(1.0)));
+			}
 
-		protected void cons2(Block blk) {
-		    blk.add(new LBinOp.Assign(fragnorm.ref(), init));
-		}
-	    });
-	val.force();
-    };
-    public ShaderMacro shader() {
-	return(shader);
-    }
+			protected void cons2(Block blk) {
+				blk.add(new LBinOp.Assign(fragnorm.ref(), init));
+			}
+		});
+		val.force();
+	};
 
-    public void apply(Pipe p) {p.put(slot, this);}
-
-    public static class Canon implements Pipe.Op, Disposable {
-	public Texture2D tex = null;
-	private int refcount = 0;
+	public ShaderMacro shader() {
+		return (shader);
+	}
 
 	public void apply(Pipe p) {
-	    FrameConfig fb = p.get(FrameConfig.slot);
-	    if((tex == null) || !tex.sz().equals(fb.sz)) {
-		if(tex != null)
-		    tex.dispose();
-		tex = new Texture2D(fb.sz, DataBuffer.Usage.STATIC, new VectorFormat(4, NumberFormat.UNORM8), null);
-	    }
-	    p.prep(new RenderedNormals(tex.image(0)));
+		p.put(slot, this);
 	}
 
-	public void dispose() {
-	    if(tex != null)
-		tex.dispose();
-	}
-    }
+	public static class Canon implements Pipe.Op, Disposable {
+		public Texture2D tex = null;
+		private int refcount = 0;
 
-    public static Canon get(Pipe state) {
-	RenderContext ctx = state.get(RenderContext.slot);
-	if(ctx == null)
-	    return(null);
-	Canon ret;
-	synchronized(ctx) {
-	    ret = (Canon)ctx.basic(Canon.class);
-	    if(ret == null) {
-		ret = new Canon();
-		ctx.basic(Canon.class, ret);
-	    }
-	    ret.refcount++;
-	}
-	return(ret);
-    }
+		public void apply(Pipe p) {
+			FrameConfig fb = p.get(FrameConfig.slot);
+			if ((tex == null) || !tex.sz().equals(fb.sz)) {
+				if (tex != null)
+					tex.dispose();
+				tex = new Texture2D(fb.sz, DataBuffer.Usage.STATIC, new VectorFormat(4, NumberFormat.UNORM8), null);
+			}
+			p.prep(new RenderedNormals(tex.image(0)));
+		}
 
-    public static void put(Pipe state) {
-	RenderContext ctx = state.get(RenderContext.slot);
-	if(ctx == null)
-	    return;
-	synchronized(ctx) {
-	    Canon cur = (Canon)ctx.basic(Canon.class);
-	    if(cur == null)
-		throw(new IllegalStateException());
-	    if(--cur.refcount <= 0) {
-		ctx.basic(Canon.class, null);
-		cur.dispose();
-	    }
+		public void dispose() {
+			if (tex != null)
+				tex.dispose();
+		}
 	}
-    }
 
-    @Material.ResName("masknorm")
-    public static class $maskcol implements Material.ResCons {
-	final Pipe.Op mask = p -> p.put(slot, null);
-	public Pipe.Op cons(Resource res, Object... args) {
-	    return(mask);
+	public static Canon get(Pipe state) {
+		RenderContext ctx = state.get(RenderContext.slot);
+		if (ctx == null)
+			return (null);
+		Canon ret;
+		synchronized (ctx) {
+			ret = (Canon) ctx.basic(Canon.class);
+			if (ret == null) {
+				ret = new Canon();
+				ctx.basic(Canon.class, ret);
+			}
+			ret.refcount++;
+		}
+		return (ret);
 	}
-    }
+
+	public static void put(Pipe state) {
+		RenderContext ctx = state.get(RenderContext.slot);
+		if (ctx == null)
+			return;
+		synchronized (ctx) {
+			Canon cur = (Canon) ctx.basic(Canon.class);
+			if (cur == null)
+				throw (new IllegalStateException());
+			if (--cur.refcount <= 0) {
+				ctx.basic(Canon.class, null);
+				cur.dispose();
+			}
+		}
+	}
+
+	@Material.ResName("masknorm")
+	public static class $maskcol implements Material.ResCons {
+		final Pipe.Op mask = p -> p.put(slot, null);
+
+		public Pipe.Op cons(Resource res, Object... args) {
+			return (mask);
+		}
+	}
 }

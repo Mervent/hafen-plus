@@ -31,130 +31,136 @@ import haven.render.sl.ShaderMacro;
 import haven.render.sl.InstancedAttribute;
 
 public class Location extends Transform {
-    public final String id;
+	public final String id;
 
-    public Location(Matrix4f xf, String id) {
-	super(xf);
-	this.id = id;
-    }
-
-    public Location(Matrix4f xf) {
-	this(xf, null);
-    }
-
-    public static class Chain extends State implements InstanceBatch.AttribState {
-	public final Location loc;
-	public final Chain p;
-	private Matrix4f bk;
-
-	private Chain(Location loc, Chain p) {
-	    this.loc = loc;
-	    this.p = p;
+	public Location(Matrix4f xf, String id) {
+		super(xf);
+		this.id = id;
 	}
 
-	public Matrix4f fin(Matrix4f o) {
-	    if(p == null)
-		return(loc.fin(o));
-	    return(loc.fin(p.fin(o)));
+	public Location(Matrix4f xf) {
+		this(xf, null);
 	}
 
-	public ShaderMacro shader() {return(null);}
+	public static class Chain extends State implements InstanceBatch.AttribState {
+		public final Location loc;
+		public final Chain p;
+		private Matrix4f bk;
 
-	public void apply(Pipe p) {
-	    p.put(Homo3D.loc, this);
-	}
+		private Chain(Location loc, Chain p) {
+			this.loc = loc;
+			this.p = p;
+		}
 
-	public Chain back(String id) {
-	    for(Chain cur = this; cur != null; cur = cur.p) {
-		if(cur.loc.id == id)
-		    return(cur);
-	    }
-	    return(null);
-	}
+		public Matrix4f fin(Matrix4f o) {
+			if (p == null)
+				return (loc.fin(o));
+			return (loc.fin(p.fin(o)));
+		}
 
-	public int hashCode() {
-	    int h = System.identityHashCode(loc);
-	    if(p != null)
-		h = (h * 31) + p.hashCode();
-	    return(h);
-	}
+		public ShaderMacro shader() {
+			return (null);
+		}
 
-	public boolean equals(Object o) {
-	    if(!(o instanceof Chain))
-		return(false);
-	    Chain c = (Chain)o;
-	    return((c.loc == loc) && Utils.eq(c.p, p));
-	}
+		public void apply(Pipe p) {
+			p.put(Homo3D.loc, this);
+		}
 
-	public static final Instancer<Chain> instancer = new Instancer<Chain>() {
-	    final Chain instanced = new Chain(null, null) {
-		    public Matrix4f fin(Matrix4f o) {
-			throw(new RuntimeException("Currently in instanced drawing; cannot finalize a single location"));
-		    }
+		public Chain back(String id) {
+			for (Chain cur = this; cur != null; cur = cur.p) {
+				if (cur.loc.id == id)
+					return (cur);
+			}
+			return (null);
+		}
 
-		    public String toString() {return("instanced location");}
+		public int hashCode() {
+			int h = System.identityHashCode(loc);
+			if (p != null)
+				h = (h * 31) + p.hashCode();
+			return (h);
+		}
 
-		    public ShaderMacro shader() {return(mkinstanced);}
+		public boolean equals(Object o) {
+			if (!(o instanceof Chain))
+				return (false);
+			Chain c = (Chain) o;
+			return ((c.loc == loc) && Utils.eq(c.p, p));
+		}
+
+		public static final Instancer<Chain> instancer = new Instancer<Chain>() {
+			final Chain instanced = new Chain(null, null) {
+				public Matrix4f fin(Matrix4f o) {
+					throw (new RuntimeException("Currently in instanced drawing; cannot finalize a single location"));
+				}
+
+				public String toString() {
+					return ("instanced location");
+				}
+
+				public ShaderMacro shader() {
+					return (mkinstanced);
+				}
+			};
+
+			public Chain inststate(Chain uinst, InstanceBatch bat) {
+				return (instanced);
+			}
 		};
 
-	    public Chain inststate(Chain uinst, InstanceBatch bat) {
-		return(instanced);
-	    }
-	};
-
-	public InstancedAttribute[] attribs() {
-	    return(new InstancedAttribute[] {Homo3D.u_wxf.attrib});
-	}
-
-	public String toString() {
-	    String ret = loc.toString();
-	    if(p != null)
-		ret += " -> " + p;
-	    return(ret);
-	}
-    }
-
-    public void apply(Pipe p) {
-	Chain prev = p.get(Homo3D.loc);
-	p.put(Homo3D.loc, new Chain(this, prev));
-    }
-
-    public static Chain back(Pipe p, String id) {
-	Chain s = p.get(Homo3D.loc);
-	return((s == null) ? s : s.back(id));
-    }
-
-    public static Chain goback(Pipe p, String id) {
-	Chain s = back(p, id);
-	if(s == null)
-	    return(null);
-	p.put(Homo3D.loc, s);
-	return(s);
-    }
-
-    public static Pipe.Op goback(String id) {
-	return(p -> goback(p, id));
-    }
-
-    public static Location xlate(Coord3f c) {
-	return(new Location(makexlate(new Matrix4f(), c)));
-    }
-
-    public static Location rot(Coord3f axis, float angle) {
-	return(new Location(makerot(new Matrix4f(), axis.norm(), angle)));
-    }
-
-    public static final Location onlyxl = new Location(Matrix4f.id) {
-	    private Matrix4f lp = null, fin;
-
-	    public Matrix4f fin(Matrix4f p) {
-		if(p != lp) {
-		    fin = Matrix4f.identity();
-		    fin.m[12] = p.m[12];
-		    fin.m[13] = p.m[13];
-		    fin.m[14] = p.m[14];
+		public InstancedAttribute[] attribs() {
+			return (new InstancedAttribute[] { Homo3D.u_wxf.attrib });
 		}
-		return(fin);
-	    }
+
+		public String toString() {
+			String ret = loc.toString();
+			if (p != null)
+				ret += " -> " + p;
+			return (ret);
+		}
+	}
+
+	public void apply(Pipe p) {
+		Chain prev = p.get(Homo3D.loc);
+		p.put(Homo3D.loc, new Chain(this, prev));
+	}
+
+	public static Chain back(Pipe p, String id) {
+		Chain s = p.get(Homo3D.loc);
+		return ((s == null) ? s : s.back(id));
+	}
+
+	public static Chain goback(Pipe p, String id) {
+		Chain s = back(p, id);
+		if (s == null)
+			return (null);
+		p.put(Homo3D.loc, s);
+		return (s);
+	}
+
+	public static Pipe.Op goback(String id) {
+		return (p -> goback(p, id));
+	}
+
+	public static Location xlate(Coord3f c) {
+		return (new Location(makexlate(new Matrix4f(), c)));
+	}
+
+	public static Location rot(Coord3f axis, float angle) {
+		return (new Location(makerot(new Matrix4f(), axis.norm(), angle)));
+	}
+
+	public static final Location onlyxl = new Location(Matrix4f.id) {
+		private Matrix4f lp = null, fin;
+
+		public Matrix4f fin(Matrix4f p) {
+			if (p != lp) {
+				fin = Matrix4f.identity();
+				fin.m[12] = p.m[12];
+				fin.m[13] = p.m[13];
+				fin.m[14] = p.m[14];
+			}
+			return (fin);
+		}
 	};
 }

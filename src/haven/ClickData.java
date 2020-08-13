@@ -30,25 +30,25 @@ import haven.render.*;
 import haven.render.RenderTree.Slot;
 
 public class ClickData {
-    public final Clickable ci;
-    public final Slot slot;
+	public final Clickable ci;
+	public final Slot slot;
 
-    public ClickData(Clickable ci, Slot slot) {
-	this.ci = ci;
-	this.slot = slot;
-    }
+	public ClickData(Clickable ci, Slot slot) {
+		this.ci = ci;
+		this.slot = slot;
+	}
 
-    public Object[] array() {
-	int n = 0;
-	for(Slot slot = this.slot; slot != null; slot = slot.parent())
-	    n++;
-	Object[] ret = new Object[n];
-	for(Slot slot = this.slot; slot != null; slot = slot.parent())
-	    ret[--n] = slot.obj();
-	return(ret);
-    }
+	public Object[] array() {
+		int n = 0;
+		for (Slot slot = this.slot; slot != null; slot = slot.parent())
+			n++;
+		Object[] ret = new Object[n];
+		for (Slot slot = this.slot; slot != null; slot = slot.parent())
+			ret[--n] = slot.obj();
+		return (ret);
+	}
 
-    public Object[] clickargs() {
-	return(ci.clickargs(this));
-    }
+	public Object[] clickargs() {
+		return (ci.clickargs(this));
+	}
 }

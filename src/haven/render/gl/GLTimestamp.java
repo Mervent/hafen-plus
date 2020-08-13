@@ -30,34 +30,34 @@ import java.util.function.*;
 import javax.media.opengl.*;
 
 public class GLTimestamp extends GLQuery {
-    public final Consumer<Long> callback;
-    private int id;
+	public final Consumer<Long> callback;
+	private int id;
 
-    public GLTimestamp(GLEnvironment env, Consumer<Long> callback) {
-	super(env);
-	this.callback = callback;
-    }
+	public GLTimestamp(GLEnvironment env, Consumer<Long> callback) {
+		super(env);
+		this.callback = callback;
+	}
 
-    public void create(GL3 gl) {
-	int[] buf = {0};
-	gl.glGenQueries(1, buf, 0);
-	gl.glQueryCounter(buf[0], GL3.GL_TIMESTAMP);
-	id = buf[0];
-	env.queries.add(this);
-    }
+	public void create(GL3 gl) {
+		int[] buf = { 0 };
+		gl.glGenQueries(1, buf, 0);
+		gl.glQueryCounter(buf[0], GL3.GL_TIMESTAMP);
+		id = buf[0];
+		env.queries.add(this);
+	}
 
-    public boolean check(GL3 gl) {
-	int[] rbuf = {0};
-	gl.glGetQueryObjectiv(id, GL3.GL_QUERY_RESULT_AVAILABLE, rbuf, 0);
-	if(rbuf[0] == 0)
-	    return(false);
-	long[] tbuf = {0};
-	gl.glGetQueryObjecti64v(id, GL3.GL_QUERY_RESULT, tbuf, 0);
-	callback.accept(tbuf[0]);
-	return(true);
-    }
+	public boolean check(GL3 gl) {
+		int[] rbuf = { 0 };
+		gl.glGetQueryObjectiv(id, GL3.GL_QUERY_RESULT_AVAILABLE, rbuf, 0);
+		if (rbuf[0] == 0)
+			return (false);
+		long[] tbuf = { 0 };
+		gl.glGetQueryObjecti64v(id, GL3.GL_QUERY_RESULT, tbuf, 0);
+		callback.accept(tbuf[0]);
+		return (true);
+	}
 
-    public void delete(GL3 gl) {
-	gl.glDeleteQueries(1, new int[] {id}, 0);
-    }
+	public void delete(GL3 gl) {
+		gl.glDeleteQueries(1, new int[] { id }, 0);
+	}
 }

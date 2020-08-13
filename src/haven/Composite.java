@@ -35,143 +35,145 @@ import static haven.Composited.ED;
 import static haven.Composited.MD;
 
 public class Composite extends Drawable {
-    public final static float ipollen = 0.2f;
-    public final Indir<Resource> base;
-    public final Composited comp;
-    public int pseq;
-    public List<MD> nmod;
-    public List<ED> nequ;
-    private Collection<ResData> nposes = null, tposes = null;
-    private boolean nposesold, retainequ = false;
-    private float tptime;
-    private WrapMode tpmode;
-    
-    public Composite(Gob gob, Indir<Resource> base) {
-	super(gob);
-	this.base = base;
-	comp = new Composited(base.get().layer(Skeleton.Res.class).s);
-	comp.eqowner = gob;
-    }
-    
-    public void added(RenderTree.Slot slot) {
-	slot.add(comp);
-	super.added(slot);
-    }
+	public final static float ipollen = 0.2f;
+	public final Indir<Resource> base;
+	public final Composited comp;
+	public int pseq;
+	public List<MD> nmod;
+	public List<ED> nequ;
+	private Collection<ResData> nposes = null, tposes = null;
+	private boolean nposesold, retainequ = false;
+	private float tptime;
+	private WrapMode tpmode;
 
-    public static List<PoseMod> loadposes(Collection<ResData> rl, Skeleton.ModOwner owner, Skeleton skel, boolean old) {
-	List<PoseMod> mods = new ArrayList<PoseMod>(rl.size());
-	for(ResData dat : rl) {
-	    PoseMod mod = skel.mkposemod(owner, dat.res.get(), dat.sdt.clone());
-	    if(old)
-		mod.age();
-	    mods.add(mod);
+	public Composite(Gob gob, Indir<Resource> base) {
+		super(gob);
+		this.base = base;
+		comp = new Composited(base.get().layer(Skeleton.Res.class).s);
+		comp.eqowner = gob;
 	}
-	return(mods);
-    }
 
-    private List<PoseMod> loadposes(Collection<ResData> rl, Skeleton skel, boolean old) {
-	return(loadposes(rl, gob, skel, old));
-    }
-
-    private List<PoseMod> loadposes(Collection<ResData> rl, Skeleton skel, WrapMode mode) {
-	List<PoseMod> mods = new ArrayList<PoseMod>(rl.size());
-	for(ResData dat : rl) {
-	    for(Skeleton.ResPose p : dat.res.get().layers(Skeleton.ResPose.class))
-		mods.add(p.forskel(gob, skel, (mode == null)?p.defmode:mode));
+	public void added(RenderTree.Slot slot) {
+		slot.add(comp);
+		super.added(slot);
 	}
-	return(mods);
-    }
 
-    private void updequ() {
-	retainequ = false;
-	if(nmod != null) {
-	    try {
-		comp.chmod(nmod);
-		nmod = null;
-	    } catch(Loading l) {
-	    }
+	public static List<PoseMod> loadposes(Collection<ResData> rl, Skeleton.ModOwner owner, Skeleton skel, boolean old) {
+		List<PoseMod> mods = new ArrayList<PoseMod>(rl.size());
+		for (ResData dat : rl) {
+			PoseMod mod = skel.mkposemod(owner, dat.res.get(), dat.sdt.clone());
+			if (old)
+				mod.age();
+			mods.add(mod);
+		}
+		return (mods);
 	}
-	if(nequ != null) {
-	    try {
-		comp.chequ(nequ);
-		nequ = null;
-	    } catch(Loading l) {
-	    }
-	}
-    }
 
-    public void ctick(double dt) {
-	if(nposes != null) {
-	    try {
-		Composited.Poses np = comp.new Poses(loadposes(nposes, comp.skel, nposesold));
-		np.set(nposesold?0:ipollen);
-		nposes = null;
-		updequ();
-	    } catch(Loading e) {}
-	} else if(tposes != null) {
-	    try {
-		final Composited.Poses cp = comp.poses;
-		Composited.Poses np = comp.new Poses(loadposes(tposes, comp.skel, tpmode)) {
-			protected void done() {
-			    cp.set(ipollen);
-			    updequ();
+	private List<PoseMod> loadposes(Collection<ResData> rl, Skeleton skel, boolean old) {
+		return (loadposes(rl, gob, skel, old));
+	}
+
+	private List<PoseMod> loadposes(Collection<ResData> rl, Skeleton skel, WrapMode mode) {
+		List<PoseMod> mods = new ArrayList<PoseMod>(rl.size());
+		for (ResData dat : rl) {
+			for (Skeleton.ResPose p : dat.res.get().layers(Skeleton.ResPose.class))
+				mods.add(p.forskel(gob, skel, (mode == null) ? p.defmode : mode));
+		}
+		return (mods);
+	}
+
+	private void updequ() {
+		retainequ = false;
+		if (nmod != null) {
+			try {
+				comp.chmod(nmod);
+				nmod = null;
+			} catch (Loading l) {
 			}
-		    };
-		np.limit = tptime;
-		np.set(ipollen);
-		tposes = null;
-		retainequ = true;
-	    } catch(Loading e) {}
-	} else if(!retainequ) {
-	    updequ();
+		}
+		if (nequ != null) {
+			try {
+				comp.chequ(nequ);
+				nequ = null;
+			} catch (Loading l) {
+			}
+		}
 	}
-	comp.tick(dt);
-    }
 
-    public void gtick(Render g) {
-	comp.gtick(g);
-    }
+	public void ctick(double dt) {
+		if (nposes != null) {
+			try {
+				Composited.Poses np = comp.new Poses(loadposes(nposes, comp.skel, nposesold));
+				np.set(nposesold ? 0 : ipollen);
+				nposes = null;
+				updequ();
+			} catch (Loading e) {
+			}
+		} else if (tposes != null) {
+			try {
+				final Composited.Poses cp = comp.poses;
+				Composited.Poses np = comp.new Poses(loadposes(tposes, comp.skel, tpmode)) {
+					protected void done() {
+						cp.set(ipollen);
+						updequ();
+					}
+				};
+				np.limit = tptime;
+				np.set(ipollen);
+				tposes = null;
+				retainequ = true;
+			} catch (Loading e) {
+			}
+		} else if (!retainequ) {
+			updequ();
+		}
+		comp.tick(dt);
+	}
 
-    public Resource getres() {
-	return(base.get());
-    }
-    
-    public Pose getpose() {
-	return(comp.pose);
-    }
-    
-    public void chposes(Collection<ResData> poses, boolean interp) {
-	if(tposes != null)
-	    tposes = null;
-	nposes = poses;
-	nposesold = !interp;
-    }
-    
-    @Deprecated
-    public void chposes(List<Indir<Resource>> poses, boolean interp) {
-	chposes(ResData.wrap(poses), interp);
-    }
+	public void gtick(Render g) {
+		comp.gtick(g);
+	}
 
-    public void tposes(Collection<ResData> poses, WrapMode mode, float time) {
-	this.tposes = poses;
-	this.tpmode = mode;
-	this.tptime = time;
-    }
-    
-    @Deprecated
-    public void tposes(List<Indir<Resource>> poses, WrapMode mode, float time) {
-	tposes(ResData.wrap(poses), mode, time);
-    }
+	public Resource getres() {
+		return (base.get());
+	}
 
-    public void chmod(List<MD> mod) {
-	nmod = mod;
-    }
+	public Pose getpose() {
+		return (comp.pose);
+	}
 
-    public void chequ(List<ED> equ) {
-	nequ = equ;
-    }
+	public void chposes(Collection<ResData> poses, boolean interp) {
+		if (tposes != null)
+			tposes = null;
+		nposes = poses;
+		nposesold = !interp;
+	}
 
-    public Object staticp() {
-	return(null);
-    }
+	@Deprecated
+	public void chposes(List<Indir<Resource>> poses, boolean interp) {
+		chposes(ResData.wrap(poses), interp);
+	}
+
+	public void tposes(Collection<ResData> poses, WrapMode mode, float time) {
+		this.tposes = poses;
+		this.tpmode = mode;
+		this.tptime = time;
+	}
+
+	@Deprecated
+	public void tposes(List<Indir<Resource>> poses, WrapMode mode, float time) {
+		tposes(ResData.wrap(poses), mode, time);
+	}
+
+	public void chmod(List<MD> mod) {
+		nmod = mod;
+	}
+
+	public void chequ(List<ED> equ) {
+		nequ = equ;
+	}
+
+	public Object staticp() {
+		return (null);
+	}
 }

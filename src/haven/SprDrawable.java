@@ -30,32 +30,32 @@ import java.util.*;
 import haven.render.*;
 
 public class SprDrawable extends Drawable {
-    public final Sprite spr;
+	public final Sprite spr;
 
-    public SprDrawable(Gob gob, Sprite spr) {
-	super(gob);
-	this.spr = spr;
-    }
+	public SprDrawable(Gob gob, Sprite spr) {
+		super(gob);
+		this.spr = spr;
+	}
 
-    public void added(RenderTree.Slot slot) {
-	slot.add(spr);
-	super.added(slot);
-    }
+	public void added(RenderTree.Slot slot) {
+		slot.add(spr);
+		super.added(slot);
+	}
 
-    public void dispose() {
-	if(spr != null)
-	    spr.dispose();
-    }
+	public void dispose() {
+		if (spr != null)
+			spr.dispose();
+	}
 
-    public void ctick(double dt) {
-	spr.tick(dt);
-    }
+	public void ctick(double dt) {
+		spr.tick(dt);
+	}
 
-    public void gtick(Render g) {
-	spr.gtick(g);
-    }
+	public void gtick(Render g) {
+		spr.gtick(g);
+	}
 
-    public Resource getres() {
-	return(null);
-    }
+	public Resource getres() {
+		return (null);
+	}
 }

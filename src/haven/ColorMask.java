@@ -32,25 +32,27 @@ import haven.render.sl.*;
 import static haven.render.sl.Type.*;
 
 public class ColorMask extends State {
-    public static final Slot<ColorMask> slot = new Slot<ColorMask>(Slot.Type.DRAW, ColorMask.class);
-    public static final Uniform ccol = new Uniform(VEC4, p -> p.get(slot).col, slot);
-    private final FColor col;
+	public static final Slot<ColorMask> slot = new Slot<ColorMask>(Slot.Type.DRAW, ColorMask.class);
+	public static final Uniform ccol = new Uniform(VEC4, p -> p.get(slot).col, slot);
+	private final FColor col;
 
-    private static final ShaderMacro sh = prog -> {
-	FragColor.fragcol(prog.fctx).mod(in -> MiscLib.colblend.call(in, ccol.ref()), 100);
-    };
+	private static final ShaderMacro sh = prog -> {
+		FragColor.fragcol(prog.fctx).mod(in -> MiscLib.colblend.call(in, ccol.ref()), 100);
+	};
 
-    public ColorMask(FColor col) {
-	this.col = col;
-    }
+	public ColorMask(FColor col) {
+		this.col = col;
+	}
 
-    public ColorMask(Color col) {
-	this(new FColor(col));
-    }
+	public ColorMask(Color col) {
+		this(new FColor(col));
+	}
 
-    public ShaderMacro shader() {return(sh);}
+	public ShaderMacro shader() {
+		return (sh);
+	}
 
-    public void apply(Pipe buf) {
-	buf.put(slot, this);
-    }
+	public void apply(Pipe buf) {
+		buf.put(slot, this);
+	}
 }

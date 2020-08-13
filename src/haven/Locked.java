@@ -29,26 +29,29 @@ package haven;
 import java.util.concurrent.locks.*;
 
 public class Locked implements AutoCloseable {
-    private final Lock lk;
-    private boolean held;
+	private final Lock lk;
+	private boolean held;
 
-    public Locked(Lock lk) {
-	(this.lk = lk).lock();
-	held = true;
-    }
-
-    public void unlock() {
-	if(!held)
-	    throw(new IllegalStateException());
-	lk.unlock();
-	held = false;
-    }
-    public void close() {unlock();}
-
-    protected void finalize() {
-	if(held) {
-	    Warning.warn("held lock finalized");
-	    lk.unlock();
+	public Locked(Lock lk) {
+		(this.lk = lk).lock();
+		held = true;
 	}
-    }
+
+	public void unlock() {
+		if (!held)
+			throw (new IllegalStateException());
+		lk.unlock();
+		held = false;
+	}
+
+	public void close() {
+		unlock();
+	}
+
+	protected void finalize() {
+		if (held) {
+			Warning.warn("held lock finalized");
+			lk.unlock();
+		}
+	}
 }

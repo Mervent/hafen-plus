@@ -29,45 +29,46 @@ package haven.render.gl;
 import javax.media.opengl.*;
 
 public class VaoBindState extends VaoState {
-    public static final boolean DO_GL_EBO_FIXUP = true;
-    public final GLVertexArray vao;
-    /* XXX? It seems that some GL implementations erroneously don't
-     * track element buffers with the VAO, so do the safe thing and
-     * track it explicitly. */
-    public final GLBuffer ebo;
+	public static final boolean DO_GL_EBO_FIXUP = true;
+	public final GLVertexArray vao;
+	/*
+	 * XXX? It seems that some GL implementations erroneously don't track element
+	 * buffers with the VAO, so do the safe thing and track it explicitly.
+	 */
+	public final GLBuffer ebo;
 
-    public VaoBindState(GLVertexArray vao, GLBuffer ebo) {
-	this.vao = vao;
-	this.ebo = ebo;
-    }
-
-    public void apply(BGL gl) {
-	gl.glBindVertexArray(vao);
-	if(DO_GL_EBO_FIXUP)
-	    gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, ebo);
-    }
-
-    public void unapply(BGL gl) {
-	gl.glBindVertexArray(null);
-    }
-
-    public void applyto(BGL gl, GLState sthat) {
-	if(!(sthat instanceof VaoBindState)) {
-	    super.applyto(gl, sthat);
-	    return;
+	public VaoBindState(GLVertexArray vao, GLBuffer ebo) {
+		this.vao = vao;
+		this.ebo = ebo;
 	}
-	VaoBindState that = (VaoBindState)sthat;
-	if(that.vao != this.vao) {
-	    gl.glBindVertexArray(that.vao);
-	    if(DO_GL_EBO_FIXUP)
-		gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, that.ebo);
-	}
-    }
 
-    public static void apply(BGL gl, Applier st, GLVertexArray vao, GLBuffer ebo) {
-	GLState cur = st.glstates[slot];
-	if((cur instanceof VaoBindState) && (((VaoBindState)cur).vao == vao) && (((VaoBindState)cur).ebo == ebo))
-	    return;
-	st.apply(gl, new VaoBindState(vao, ebo));
-    }
+	public void apply(BGL gl) {
+		gl.glBindVertexArray(vao);
+		if (DO_GL_EBO_FIXUP)
+			gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, ebo);
+	}
+
+	public void unapply(BGL gl) {
+		gl.glBindVertexArray(null);
+	}
+
+	public void applyto(BGL gl, GLState sthat) {
+		if (!(sthat instanceof VaoBindState)) {
+			super.applyto(gl, sthat);
+			return;
+		}
+		VaoBindState that = (VaoBindState) sthat;
+		if (that.vao != this.vao) {
+			gl.glBindVertexArray(that.vao);
+			if (DO_GL_EBO_FIXUP)
+				gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, that.ebo);
+		}
+	}
+
+	public static void apply(BGL gl, Applier st, GLVertexArray vao, GLBuffer ebo) {
+		GLState cur = st.glstates[slot];
+		if ((cur instanceof VaoBindState) && (((VaoBindState) cur).vao == vao) && (((VaoBindState) cur).ebo == ebo))
+			return;
+		st.apply(gl, new VaoBindState(vao, ebo));
+	}
 }

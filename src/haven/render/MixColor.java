@@ -33,35 +33,40 @@ import static haven.render.sl.Cons.*;
 import static haven.render.sl.Type.*;
 
 public class MixColor extends State {
-    public static final Slot<MixColor> slot = new Slot<>(Slot.Type.DRAW, MixColor.class);
-    public static final Uniform u_color = new Uniform(VEC4, "mixcolor", p -> p.get(slot).color, slot);
-    public final FColor color;
+	public static final Slot<MixColor> slot = new Slot<>(Slot.Type.DRAW, MixColor.class);
+	public static final Uniform u_color = new Uniform(VEC4, "mixcolor", p -> p.get(slot).color, slot);
+	public final FColor color;
 
-    public MixColor(FColor color) {
-	this.color = color;
-    }
+	public MixColor(FColor color) {
+		this.color = color;
+	}
 
-    public MixColor(float r, float g, float b, float a) {
-	this(new FColor(r, g, b, a));
-    }
+	public MixColor(float r, float g, float b, float a) {
+		this(new FColor(r, g, b, a));
+	}
 
-    public MixColor(Color color) {
-	this(new FColor(color));
-    }
+	public MixColor(Color color) {
+		this(new FColor(color));
+	}
 
-    public MixColor(int r, int g, int b, int a) {
-	this(new Color(r, g, b, a));
-    }
+	public MixColor(int r, int g, int b, int a) {
+		this(new Color(r, g, b, a));
+	}
 
-    public Color color() {
-	return(new Color((int)Math.round(color.r), (int)Math.round(color.g),
-			 (int)Math.round(color.b), (int)Math.round(color.a)));
-    }
+	public Color color() {
+		return (new Color((int) Math.round(color.r), (int) Math.round(color.g), (int) Math.round(color.b),
+				(int) Math.round(color.a)));
+	}
 
-    private static final ShaderMacro shader = prog -> {
-	FragColor.fragcol(prog.fctx).mod(in -> MiscLib.colblend.call(in, u_color.ref()), 0);
-    };
-    public ShaderMacro shader() {return(shader);}
+	private static final ShaderMacro shader = prog -> {
+		FragColor.fragcol(prog.fctx).mod(in -> MiscLib.colblend.call(in, u_color.ref()), 0);
+	};
 
-    public void apply(Pipe p) {p.put(slot, this);}
+	public ShaderMacro shader() {
+		return (shader);
+	}
+
+	public void apply(Pipe p) {
+		p.put(slot, this);
+	}
 }

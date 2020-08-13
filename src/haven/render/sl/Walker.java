@@ -27,5 +27,5 @@
 package haven.render.sl;
 
 public interface Walker {
-    public void el(Element e);
+	public void el(Element e);
 }

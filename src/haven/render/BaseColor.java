@@ -33,37 +33,44 @@ import static haven.render.sl.Cons.*;
 import static haven.render.sl.Type.*;
 
 public class BaseColor extends State {
-    public static final Slot<BaseColor> slot = new Slot<>(Slot.Type.DRAW, BaseColor.class);
-    public static final Uniform u_color = new Uniform(VEC4, "basecolor", p -> p.get(slot).color, slot);
-    public final FColor color;
+	public static final Slot<BaseColor> slot = new Slot<>(Slot.Type.DRAW, BaseColor.class);
+	public static final Uniform u_color = new Uniform(VEC4, "basecolor", p -> p.get(slot).color, slot);
+	public final FColor color;
 
-    public BaseColor(FColor color) {
-	this.color = color;
-    }
+	public BaseColor(FColor color) {
+		this.color = color;
+	}
 
-    public BaseColor(float r, float g, float b, float a) {
-	this(new FColor(r, g, b, a));
-    }
+	public BaseColor(float r, float g, float b, float a) {
+		this(new FColor(r, g, b, a));
+	}
 
-    public BaseColor(Color color) {
-	this(new FColor(color));
-    }
+	public BaseColor(Color color) {
+		this(new FColor(color));
+	}
 
-    public BaseColor(int r, int g, int b, int a) {
-	this(new Color(r, g, b, a));
-    }
+	public BaseColor(int r, int g, int b, int a) {
+		this(new Color(r, g, b, a));
+	}
 
-    public Color color() {
-	return(new Color((int)Math.round(color.r), (int)Math.round(color.g),
-			 (int)Math.round(color.b), (int)Math.round(color.a)));
-    }
+	public Color color() {
+		return (new Color((int) Math.round(color.r), (int) Math.round(color.g), (int) Math.round(color.b),
+				(int) Math.round(color.a)));
+	}
 
-    private static final ShaderMacro shader = prog -> {
-	FragColor.fragcol(prog.fctx).mod(in -> mul(in, u_color.ref()), 0);
-    };
-    public ShaderMacro shader() {return(shader);}
+	private static final ShaderMacro shader = prog -> {
+		FragColor.fragcol(prog.fctx).mod(in -> mul(in, u_color.ref()), 0);
+	};
 
-    public void apply(Pipe p) {p.put(slot, this);}
+	public ShaderMacro shader() {
+		return (shader);
+	}
 
-    public String toString() {return(String.format("#<basecolor %s %s %s %s>", color.r, color.g, color.b, color.a));}
+	public void apply(Pipe p) {
+		p.put(slot, this);
+	}
+
+	public String toString() {
+		return (String.format("#<basecolor %s %s %s %s>", color.r, color.g, color.b, color.a));
+	}
 }

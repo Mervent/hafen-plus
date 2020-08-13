@@ -27,44 +27,44 @@
 package haven;
 
 public class LinMove extends Moving {
-    public static final double MAXOVER = 0.5;
-    public Coord2d s, v;
-    public double t, lt, e;
-    public boolean ts = false;
+	public static final double MAXOVER = 0.5;
+	public Coord2d s, v;
+	public double t, lt, e;
+	public boolean ts = false;
 
-    public LinMove(Gob gob, Coord2d s, Coord2d v) {
-	super(gob);
-	this.s = s;
-	this.v = v;
-	this.t = 0;
-	this.e = Double.NaN;
-    }
-
-    public Coord3f getc() {
-	return(gob.glob.map.getzp(s.add(v.mul(t))));
-    }
-
-    public double getv() {
-	return(v.abs());
-    }
-
-    public void ctick(double dt) {
-	if(!ts) {
-	    t += dt * 0.9;
-	    if(!Double.isNaN(e) && (t > e)) {
-		t = e;
-	    } else if(t > lt + MAXOVER) {
-		t = lt + MAXOVER;
-		ts = true;
-	    }
+	public LinMove(Gob gob, Coord2d s, Coord2d v) {
+		super(gob);
+		this.s = s;
+		this.v = v;
+		this.t = 0;
+		this.e = Double.NaN;
 	}
-    }
 
-    public void sett(double t) {
-	lt = t;
-	if(t > this.t) {
-	    this.t = t;
-	    ts = false;
+	public Coord3f getc() {
+		return (gob.glob.map.getzp(s.add(v.mul(t))));
 	}
-    }
+
+	public double getv() {
+		return (v.abs());
+	}
+
+	public void ctick(double dt) {
+		if (!ts) {
+			t += dt * 0.9;
+			if (!Double.isNaN(e) && (t > e)) {
+				t = e;
+			} else if (t > lt + MAXOVER) {
+				t = lt + MAXOVER;
+				ts = true;
+			}
+		}
+	}
+
+	public void sett(double t) {
+		lt = t;
+		if (t > this.t) {
+			this.t = t;
+			ts = false;
+		}
+	}
 }

@@ -31,66 +31,73 @@ import haven.render.sl.ValBlock.Value;
 import static haven.Utils.eq;
 
 public class FragColor<T> extends State {
-    public static final Slot<FragColor> slot = new Slot<>(Slot.Type.SYS, FragColor.class);
-    public static final FragData fragcol = new FragData(Type.VEC4, "fragcol", p -> p.get(slot).image, slot).primary();
-    public static final Object defcolor = new Object() {
-	    public String toString() {return("#<default color buffer>");}
+	public static final Slot<FragColor> slot = new Slot<>(Slot.Type.SYS, FragColor.class);
+	public static final FragData fragcol = new FragData(Type.VEC4, "fragcol", p -> p.get(slot).image, slot).primary();
+	public static final Object defcolor = new Object() {
+		public String toString() {
+			return ("#<default color buffer>");
+		}
 	};
-    public final T image;
-    public final boolean srgb;
+	public final T image;
+	public final boolean srgb;
 
-    public FragColor(T image, boolean srgb) {
-	this.image = image;
-	this.srgb = srgb;
-    }
-
-    public FragColor(T image) {
-	this(image, false);
-    }
-
-    private static class ColorValue extends ValBlock.Value {
-	boolean srgb = false;
-
-	ColorValue(ValBlock vals) {
-	    vals.super(Type.VEC4);
+	public FragColor(T image, boolean srgb) {
+		this.image = image;
+		this.srgb = srgb;
 	}
 
-	public Expression root() {
-	    return(Vec4Cons.u);
+	public FragColor(T image) {
+		this(image, false);
 	}
 
-	protected void cons2(Block blk) {
-	    Expression val = init;
-	    if(srgb)
-		val = MiscLib.lin2srgb.call(val);
-	    blk.add(new LBinOp.Assign(fragcol.ref(), val));
+	private static class ColorValue extends ValBlock.Value {
+		boolean srgb = false;
+
+		ColorValue(ValBlock vals) {
+			vals.super(Type.VEC4);
+		}
+
+		public Expression root() {
+			return (Vec4Cons.u);
+		}
+
+		protected void cons2(Block blk) {
+			Expression val = init;
+			if (srgb)
+				val = MiscLib.lin2srgb.call(val);
+			blk.add(new LBinOp.Assign(fragcol.ref(), val));
+		}
 	}
-    }
 
-    private static ColorValue fragcol0(FragmentContext fctx) {
-	return(fctx.mainvals.ext(fragcol, () -> new ColorValue(fctx.mainvals)));
-    }
-    public static Value fragcol(FragmentContext fctx) {
-	return(fragcol0(fctx));
-    }
+	private static ColorValue fragcol0(FragmentContext fctx) {
+		return (fctx.mainvals.ext(fragcol, () -> new ColorValue(fctx.mainvals)));
+	}
 
-    private static final ShaderMacro value = prog -> fragcol0(prog.fctx).force();
-    private static final ShaderMacro mksrgb = prog -> fragcol0(prog.fctx).srgb = true;
-    private static final ShaderMacro[] shaders = {value, ShaderMacro.compose(value, mksrgb)};
-    public ShaderMacro shader() {
-	return(shaders[srgb ? 1 : 0]);
-    }
+	public static Value fragcol(FragmentContext fctx) {
+		return (fragcol0(fctx));
+	}
 
-    public void apply(Pipe p) {p.put(slot, this);}
+	private static final ShaderMacro value = prog -> fragcol0(prog.fctx).force();
+	private static final ShaderMacro mksrgb = prog -> fragcol0(prog.fctx).srgb = true;
+	private static final ShaderMacro[] shaders = { value, ShaderMacro.compose(value, mksrgb) };
 
-    public int hashCode() {
-	return(System.identityHashCode(image));
-    }
+	public ShaderMacro shader() {
+		return (shaders[srgb ? 1 : 0]);
+	}
 
-    public boolean equals(Object o) {
-	return((o instanceof FragColor) &&
-	       eq(((FragColor)o).image, this.image));
-    }
+	public void apply(Pipe p) {
+		p.put(slot, this);
+	}
 
-    public String toString() {return(String.format("#<fragcolor %s>", image));}
+	public int hashCode() {
+		return (System.identityHashCode(image));
+	}
+
+	public boolean equals(Object o) {
+		return ((o instanceof FragColor) && eq(((FragColor) o).image, this.image));
+	}
+
+	public String toString() {
+		return (String.format("#<fragcolor %s>", image));
+	}
 }

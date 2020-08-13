@@ -26,20 +26,26 @@
 
 package haven;
 
+import haven.ItemInfo.AttrCache;
+import amber.ui.Wear;
+import amber.ui.qbuff.QBuff;
+
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.function.*;
-import haven.ItemInfo.AttrCache;
-import static haven.ItemInfo.find;
+
 import static haven.Inventory.sqsz;
 
 public class WItem extends Widget implements DTarget {
 	public static final Resource missing = Resource.local().loadwait("gfx/invobjs/missing");
 	public final GItem item;
-	private Resource cspr = null;
-	private Message csdt = Message.nil;
+	public static final Color famountclr = new Color(24, 116, 205);
+	private static final Color qualitybg = new Color(20, 20, 20, 10);
+	public static final Color[] wearclr = new Color[] { new Color(233, 0, 14), new Color(218, 128, 87),
+			new Color(246, 233, 87), new Color(145, 225, 60) };
 
 	public WItem(GItem item) {
 		super(sqsz);
@@ -150,6 +156,7 @@ public class WItem extends Widget implements DTarget {
 		Color fret = ret;
 		return (() -> fret);
 	});
+
 	public final AttrCache<GItem.InfoOverlay<?>[]> itemols = new AttrCache<>(this::info, info -> {
 		ArrayList<GItem.InfoOverlay<?>> buf = new ArrayList<>();
 		for (ItemInfo inf : info) {
@@ -159,8 +166,27 @@ public class WItem extends Widget implements DTarget {
 		GItem.InfoOverlay<?>[] ret = buf.toArray(new GItem.InfoOverlay<?>[0]);
 		return (() -> ret);
 	});
+
 	public final AttrCache<Double> itemmeter = new AttrCache<>(this::info,
-			AttrCache.map1(GItem.MeterInfo.class, minf -> minf::meter));
+			AttrCache.map1(GItem.MeterInfo.class, minf -> {
+				GItem itm = WItem.this.item;
+				if (minf != null) {
+					double meter = minf.meter();
+					// if (itm.studytime > 0 && parent instanceof InventoryStudy) {
+				    // TODO: FixMe
+					if (itm.studytime > 0 && false) {
+						int timeleft = (int) (itm.studytime * (1.0 - meter));
+						int hoursleft = timeleft / 60;
+						int minutesleft = timeleft - hoursleft * 60;
+						itm.metertex = Text.render(String.format("%d:%02d", hoursleft, minutesleft), Color.WHITE).tex();
+					} else {
+						itm.metertex = Text.render(String.format("%d%%", (int) (meter * 100)), Color.WHITE).tex();
+					}
+					return minf::meter;
+				}
+				itm.metertex = null;
+				return minf::meter;
+			}));
 
 	private GSprite lspr = null;
 
@@ -195,32 +221,102 @@ public class WItem extends Widget implements DTarget {
 				for (GItem.InfoOverlay<?> ol : ols)
 					ol.draw(g);
 			}
-			Double meter = (item.meter > 0) ? Double.valueOf(item.meter / 100.0) : itemmeter.get();
-			if ((meter != null) && (meter > 0)) {
-				g.chcolor(255, 255, 255, 64);
-				Coord half = sz.div(2);
-				g.prect(half, half.inv(), half, meter * Math.PI * 2);
+			Double meter = item.meter > 0 ? Double.valueOf(item.meter / 100.0) : itemmeter.get();
+			g.chcolor(220, 60, 60, 255);
+			g.frect(Coord.z, new Coord((int) (sz.x / (100 / (meter * 100))), 4));
+			g.chcolor();
+
+			QBuff quality = item.quality();
+			if (quality != null && quality.qtex != null) {
+				Coord btm = new Coord(0, sz.y - 12);
+				Tex t = quality.qtex;
+				g.chcolor(qualitybg);
+				g.frect(btm, t.sz().add(1, -1));
 				g.chcolor();
+				g.image(t, btm);
+			}
+
+			if (item.metertex != null)
+				g.image(item.metertex, Coord.z);
+
+			ItemInfo.Contents cnt = item.getcontents();
+			if (cnt != null && cnt.content > 0)
+				drawamountbar(g, cnt.content, cnt.isseeds);
+
+			try {
+				for (ItemInfo info : item.info()) {
+					if (info instanceof Wear) {
+						double d = ((Wear) info).d;
+						double m = ((Wear) info).m;
+						double p = (m - d) / m;
+						int h = (int) (p * (double) sz.y);
+						g.chcolor(wearclr[p == 1.0 ? 3 : (int) (p / 0.25)]);
+						g.frect(new Coord(sz.x - 3, sz.y - h), new Coord(3, h));
+						g.chcolor();
+						break;
+					}
+				}
+			} catch (Exception e) { // fail silently if info is not ready
 			}
 		} else {
 			g.image(missing.layer(Resource.imgc).tex(), Coord.z, sz);
 		}
 	}
 
+	private void drawamountbar(GOut g, double content, boolean isseeds) {
+		double capacity;
+		String name = item.getname();
+		if (name.contains("Waterskin"))
+			capacity = 3.0D;
+		else if (name.contains("Bucket"))
+			capacity = isseeds ? 1000D : 10.0D;
+		else if (name.contains("Waterflask"))
+			capacity = 2.0D;
+		else
+			return;
+
+		int h = (int) (content / capacity * sz.y) - 1;
+		if (h < 0)
+			return;
+
+		g.chcolor(famountclr);
+		g.frect(new Coord(sz.x - 4, sz.y - h - 1), new Coord(3, h));
+		g.chcolor();
+	}
+
 	public boolean mousedown(Coord c, int btn) {
 		if (btn == 1) {
-			if (ui.modshift) {
-				int n = ui.modctrl ? -1 : 1;
-				item.wdgmsg("transfer", c, n);
-			} else if (ui.modctrl) {
-				int n = ui.modmeta ? -1 : 1;
-				item.wdgmsg("drop", c, n);
-			} else {
+			if (ui.modctrl && ui.modmeta)
+				wdgmsg("drop-identical", this.item);
+			else if (ui.modctrl && ui.modshift) {
+				String name = ItemInfo.find(ItemInfo.Name.class, item.info()).str.text;
+				name = name.replace(' ', '_');
+				try {
+					WebBrowser.self.show(new URL(String.format("http://ringofbrodgar.com/wiki/%s", name)));
+				} catch (MalformedURLException e) {
+				} catch (Exception e) {
+					getparent(GameUI.class).error("Could not launch web browser.");
+				}
+			} else if (ui.modshift && !ui.modmeta) {
+				// server side transfer all identical: pass third argument -1 (or 1 for single
+				// item)
+				item.wdgmsg("transfer", c);
+			} else if (ui.modctrl)
+				item.wdgmsg("drop", c);
+			else if (ui.modmeta)
+				wdgmsg("transfer-identical", this.item);
+			else
 				item.wdgmsg("take", c);
-			}
+			return (true);
+		} else if (btn == 2) {
+			if (ui.modmeta)
+				wdgmsg("transfer-identical-eq", this.item);
 			return (true);
 		} else if (btn == 3) {
-			item.wdgmsg("iact", c, ui.modflags());
+			if (ui.modmeta && !(parent instanceof Equipory))
+				wdgmsg("transfer-identical-asc", this.item);
+			else
+				item.wdgmsg("iact", c, ui.modflags());
 			return (true);
 		}
 		return (false);

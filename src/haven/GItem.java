@@ -218,7 +218,7 @@ public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owne
 			rawinfo = new ItemInfo.Raw(args);
 		} else if (name == "meter") {
 			meter = (int) ((Number) args[0]).doubleValue();
-			metertex = Text.render(String.format("%d%%", meter), Color.WHITE).tex();
+			metertex = Text.rendersmall(String.format("%d%%", meter)).tex();
 		}
 	}
 

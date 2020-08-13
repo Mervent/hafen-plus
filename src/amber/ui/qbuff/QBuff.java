@@ -7,7 +7,7 @@ import java.awt.image.BufferedImage;
 
 public class QBuff extends ItemInfo.Tip {
 	public final BufferedImage icon;
-	public final String name = "Quality: ";
+	public final String name;
 	public final String origName;
 	public final double q;
 	public static final Layout.ID<Table> lid = new Tid();
@@ -18,6 +18,7 @@ public class QBuff extends ItemInfo.Tip {
 		super(owner);
 		this.icon = icon;
 		this.origName = name;
+		this.name = name;
 		this.q = q;
 		if (q != 0) {
 			qtex = Text.render(Math.round(q) + "", Color.WHITE).tex();

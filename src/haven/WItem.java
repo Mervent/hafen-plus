@@ -28,7 +28,7 @@ package haven;
 
 import haven.ItemInfo.AttrCache;
 import amber.ui.Wear;
-import amber.ui.qbuff.QBuff;
+import haven.res.ui.tt.q.qbuff.QBuff;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;

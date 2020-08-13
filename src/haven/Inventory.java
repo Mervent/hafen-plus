@@ -26,7 +26,7 @@
 
 package haven;
 
-import amber.ui.qbuff.QBuff;
+import haven.res.ui.tt.q.qbuff.QBuff;
 
 import java.util.*;
 

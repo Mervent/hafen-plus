@@ -1,4 +1,4 @@
-package amber.ui.qbuff;
+package haven.res.ui.tt.q.qbuff;
 
 import haven.ItemInfo;
 

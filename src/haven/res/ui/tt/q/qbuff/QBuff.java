@@ -1,4 +1,4 @@
-package amber.ui.qbuff;
+package haven.res.ui.tt.q.qbuff;
 
 import haven.*;
 
@@ -21,8 +21,8 @@ public class QBuff extends ItemInfo.Tip {
 		this.name = name;
 		this.q = q;
 		if (q != 0) {
-			qtex = Text.render(Math.round(q) + "", Color.WHITE).tex();
-			qwtex = Text.render(Math.round(q) + "", Color.WHITE).tex();
+			qtex = Text.render(Math.round(q) + "").tex();
+			qwtex = Text.render(Math.round(q) + "").tex();
 		}
 	}
 

@@ -26,6 +26,8 @@
 
 package haven;
 
+import haven.res.ui.tt.q.qbuff.QBuff;
+
 import java.util.*;
 
 public class Inventory extends Widget implements DTarget {
@@ -88,11 +90,7 @@ public class Inventory extends Widget implements DTarget {
 	}
 
 	public boolean drop(Coord cc, Coord ul) {
-		Coord dc;
-		if (dropul)
-			dc = ul.add(sqsz.div(2)).div(sqsz);
-		else
-			dc = cc.div(sqsz);
+		Coord dc = dropul ? ul.add(sqsz.div(2)).div(sqsz) : cc.div(sqsz);
 		wdgmsg("drop", dc);
 		return (true);
 	}
@@ -110,5 +108,148 @@ public class Inventory extends Widget implements DTarget {
 		} else {
 			super.uimsg(msg, args);
 		}
+	}
+
+	@Override
+	public void wdgmsg(Widget sender, String msg, Object... args) {
+		if (msg.equals("drop-identical")) {
+			for (WItem item : getIdenticalItems((GItem) args[0], false))
+				item.item.wdgmsg("drop", Coord.z);
+		} else if (msg.equals("drop-identical-eq")) {
+			for (WItem item : getIdenticalItems((GItem) args[0], true))
+				item.item.wdgmsg("drop", Coord.z);
+		} else if (msg.startsWith("transfer-identical")) {
+			boolean eq = msg.endsWith("eq");
+			List<WItem> items = getIdenticalItems((GItem) args[0], eq);
+			if (!eq) {
+				int asc = msg.endsWith("asc") ? 1 : -1;
+				Collections.sort(items, (a, b) -> {
+					QBuff aq = a.item.quality();
+					QBuff bq = b.item.quality();
+					if (aq == null || bq == null)
+						return 0;
+					else if (aq.q == bq.q)
+						return 0;
+					else if (aq.q > bq.q)
+						return asc;
+					else
+						return -asc;
+				});
+			}
+			Window stockpile = gameui().getWindow("Stockpile");
+			Window smelter = gameui().getWindow("Ore Smelter");
+			Window kiln = gameui().getWindow("Kiln");
+			if (stockpile == null || smelter != null || kiln != null) {
+				for (WItem item : items)
+					item.item.wdgmsg("transfer", Coord.z);
+			} else {
+				for (Widget w = stockpile.lchild; w != null; w = w.prev) {
+					if (w instanceof ISBox) {
+						ISBox isb = (ISBox) w;
+						int freespace = isb.getfreespace();
+						for (WItem item : items) {
+							if (freespace-- <= 0)
+								break;
+							item.item.wdgmsg("take", new Coord(item.sz.x / 2, item.sz.y / 2));
+							isb.drop(null, null);
+						}
+						break;
+					}
+				}
+			}
+		} else {
+			super.wdgmsg(sender, msg, args);
+		}
+	}
+
+	public List<WItem> getIdenticalItems(GItem item, boolean quality) {
+		List<WItem> items = new ArrayList<WItem>();
+		double q0 = 0;
+		if (quality) {
+			QBuff aq = item.quality();
+			if (aq != null)
+				q0 = aq.q;
+		}
+		GSprite sprite = item.spr();
+		if (sprite != null) {
+			String name = sprite.getname();
+			String resname = item.resource().name;
+			for (Widget wdg = child; wdg != null; wdg = wdg.next) {
+				if (wdg instanceof WItem) {
+					GItem it = ((WItem) wdg).item;
+					sprite = it.spr();
+					if (sprite != null) {
+						Resource res = it.resource();
+						if (res != null && res.name.equals(resname)
+								&& (name == null || name.equals(sprite.getname()))) {
+							if (quality) {
+								QBuff bq = it.quality();
+								if (bq != null) {
+									double q1 = bq.q - q0;
+									if (q1 < 0.1 && q1 > -0.1)
+										items.add((WItem) wdg);
+								}
+							} else {
+								items.add((WItem) wdg);
+							}
+						}
+					}
+				}
+			}
+		}
+		return items;
+	}
+
+	/*
+	 * Following getItem* methods do partial matching of the name *on purpose*.
+	 * Because when localization is turned on, original English name will be in the
+	 * brackets next to the translation
+	 */
+	public List<WItem> getItemsPartial(String... names) {
+		List<WItem> items = new ArrayList<WItem>();
+		for (Widget wdg = child; wdg != null; wdg = wdg.next) {
+			if (wdg instanceof WItem) {
+				String wdgname = ((WItem) wdg).item.getname();
+				for (String name : names) {
+					if (wdgname.contains(name)) {
+						items.add((WItem) wdg);
+						break;
+					}
+				}
+			}
+		}
+		return items;
+	}
+
+	public WItem getItemPartial(String name) {
+		for (Widget wdg = child; wdg != null; wdg = wdg.next) {
+			if (wdg instanceof WItem) {
+				String wdgname = ((WItem) wdg).item.getname();
+				if (wdgname.contains(name))
+					return (WItem) wdg;
+			}
+		}
+		return null;
+	}
+
+	public int getItemPartialCount(String name) {
+		int count = 0;
+		for (Widget wdg = child; wdg != null; wdg = wdg.next) {
+			if (wdg instanceof WItem) {
+				String wdgname = ((WItem) wdg).item.getname();
+				if (wdgname.contains(name))
+					count++;
+			}
+		}
+		return count;
+	}
+
+	public int getFreeSpace() {
+		int feespace = isz.x * isz.y;
+		for (Widget wdg = child; wdg != null; wdg = wdg.next) {
+			if (wdg instanceof WItem)
+				feespace -= (wdg.sz.x * wdg.sz.y) / (sqsz.x * sqsz.y);
+		}
+		return feespace;
 	}
 }

@@ -26,9 +26,13 @@
 
 package haven;
 
+import haven.factories.*;
+import haven.res.ui.tt.ArmorFactory;
+import haven.res.ui.tt.WearFactory;
+
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.*;
-import java.lang.reflect.*;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics;
 
@@ -250,10 +254,32 @@ public abstract class ItemInfo {
 	public static class Contents extends Tip {
 		public final List<ItemInfo> sub;
 		private static final Text.Line ch = Text.render("Contents:");
+		public double content = 0;
+		public boolean isseeds;
 
 		public Contents(Owner owner, List<ItemInfo> sub) {
 			super(owner);
 			this.sub = sub;
+
+			for (ItemInfo info : sub) {
+				if (info instanceof ItemInfo.Name) {
+					ItemInfo.Name name = (ItemInfo.Name) info;
+					if (name.str != null) {
+						// determine whether we are dealing with seeds by testing for
+						// the absence of decimal separator (this will work irregardless of current
+						// localization)
+						int amountend = name.str.text.indexOf(' ');
+						isseeds = name.str.text.lastIndexOf('.', amountend) < 0;
+						if (amountend > 0) {
+							try {
+								content = Double.parseDouble(name.str.text.substring(0, amountend));
+								break;
+							} catch (NumberFormatException nfe) {
+							}
+						}
+					}
+				}
+			}
 		}
 
 		public BufferedImage tipimg() {
@@ -358,22 +384,51 @@ public abstract class ItemInfo {
 		return (null);
 	}
 
+	private static final Map<String, ItemInfo.InfoFactory> customFactories = new HashMap<>(14);
+
+	static {
+		customFactories.put("paginae/gov/enact/backwater", new BackwaterFactory());
+		customFactories.put("paginae/gov/enact/bullmyth", new BullmythFactory());
+		customFactories.put("paginae/gov/enact/centeroflearning", new CenteroflearningFactory());
+		customFactories.put("paginae/gov/enact/fecundearth", new FecundearthFactory());
+		customFactories.put("paginae/gov/enact/foundingmythos", new FoundingmythosFactory());
+		customFactories.put("paginae/gov/enact/gamekeeping", new GamekeepingFactory());
+		customFactories.put("paginae/gov/enact/guardedmarches", new GuardedmarchesFactory());
+		customFactories.put("paginae/gov/enact/heraldicswan", new HeraldicswanFactory());
+		customFactories.put("paginae/gov/enact/localcuisine", new LocalcuisineFactory());
+		customFactories.put("paginae/gov/enact/mountaintradition", new MountaintraditionFactory());
+		customFactories.put("paginae/gov/enact/seamarriage", new SeamarriageFactory());
+		customFactories.put("paginae/gov/enact/woodlandrealm", new WoodlandrealmFactory());
+
+		customFactories.put("ui/tt/armor", new ArmorFactory());
+		customFactories.put("ui/tt/wear", new WearFactory());
+	}
+
 	public static List<ItemInfo> buildinfo(Owner owner, Raw raw) {
 		List<ItemInfo> ret = new ArrayList<ItemInfo>();
 		for (Object o : raw.data) {
 			if (o instanceof Object[]) {
 				Object[] a = (Object[]) o;
-				Resource ttres;
+				Resource ttres = null;
+				InfoFactory f = null;
 				if (a[0] instanceof Integer) {
 					ttres = owner.glob().sess.getres((Integer) a[0]).get();
 				} else if (a[0] instanceof Resource) {
 					ttres = (Resource) a[0];
 				} else if (a[0] instanceof Indir) {
 					ttres = (Resource) ((Indir) a[0]).get();
+				} else if (a[0] instanceof InfoFactory) {
+					f = (InfoFactory) a[0];
 				} else {
 					throw (new ClassCastException("Unexpected info specification " + a[0].getClass()));
 				}
-				InfoFactory f = ttres.getcode(InfoFactory.class, true);
+
+				if (f == null) {
+					f = customFactories.get(ttres.name);
+					if (f == null)
+						f = ttres.getcode(InfoFactory.class, true);
+				}
+
 				ItemInfo inf = f.build(owner, raw, a);
 				if (inf != null)
 					ret.add(inf);

@@ -26,10 +26,11 @@
 
 package haven;
 
+import haven.res.ui.tt.q.qbuff.QBuff;
+
 import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
 import java.util.*;
+import java.awt.image.BufferedImage;
 
 public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owner {
 	public Indir<Resource> res;
@@ -39,6 +40,10 @@ public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owne
 	private GSprite spr;
 	private ItemInfo.Raw rawinfo;
 	private List<ItemInfo> info = Collections.emptyList();
+	private QBuff quality;
+	public Tex metertex;
+	public double studytime = 0.0;
+	private boolean postProcessed = false;
 
 	@RName("item")
 	public static class $_ implements Factory {
@@ -89,11 +94,11 @@ public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owne
 		}
 
 		public default void drawoverlay(GOut g, Tex tex) {
-			g.aimage(tex, g.sz(), 1, 1);
+			g.aimage(tex, new Coord(g.br.x, 0), 1, 0);
 		}
 
 		public static BufferedImage numrender(int num, Color col) {
-			return (Utils.outline2(Text.render(Integer.toString(num), col).img, Utils.contrast(col)));
+			return Text.render(num + "", col).img;
 		}
 	}
 
@@ -121,6 +126,18 @@ public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owne
 
 	public GItem(Indir<Resource> res) {
 		this(res, Message.nil);
+	}
+
+	public String getname() {
+		if (rawinfo == null) {
+			return "";
+		}
+
+		try {
+			return ItemInfo.find(ItemInfo.Name.class, info()).str.text;
+		} catch (Exception ex) {
+			return "";
+		}
 	}
 
 	private Random rnd = null;
@@ -152,6 +169,10 @@ public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owne
 		if (spr == null) {
 			try {
 				spr = this.spr = GSprite.create(this, res.get(), sdt.clone());
+				if (!postProcessed) {
+					dropItMaybe();
+					postProcessed = true;
+				}
 			} catch (Loading l) {
 			}
 		}
@@ -165,8 +186,9 @@ public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owne
 	}
 
 	public List<ItemInfo> info() {
-		if (info == null)
+		if (info == null) {
 			info = ItemInfo.buildinfo(this, rawinfo);
+		}
 		return (info);
 	}
 
@@ -191,9 +213,65 @@ public class GItem extends AWidget implements ItemInfo.SpriteOwner, GSprite.Owne
 			}
 		} else if (name == "tt") {
 			info = null;
+			if (rawinfo != null)
+				quality = null;
 			rawinfo = new ItemInfo.Raw(args);
 		} else if (name == "meter") {
 			meter = (int) ((Number) args[0]).doubleValue();
+			metertex = Text.render(String.format("%d%%", meter), Color.WHITE).tex();
 		}
+	}
+
+	public void qualitycalc(List<ItemInfo> infolist) {
+		for (ItemInfo info : infolist) {
+			if (info instanceof QBuff) {
+				this.quality = (QBuff) info;
+				break;
+			}
+		}
+	}
+
+	public QBuff quality() {
+		if (quality == null) {
+			try {
+				for (ItemInfo info : info()) {
+					if (info instanceof ItemInfo.Contents) {
+						qualitycalc(((ItemInfo.Contents) info).sub);
+						return quality;
+					}
+				}
+				qualitycalc(info());
+			} catch (Loading l) {
+			}
+		}
+		return quality;
+	}
+
+	public ItemInfo.Contents getcontents() {
+		try {
+			for (ItemInfo info : info()) {
+				if (info instanceof ItemInfo.Contents)
+					return (ItemInfo.Contents) info;
+			}
+		} catch (Exception e) { // fail silently if info is not ready
+		}
+		return null;
+	}
+
+	private void dropItMaybe() {
+		// Resource curs = ui.root.getcurs(Coord.z);
+		// if (Config.dropEverything) {
+		// this.wdgmsg("drop", Coord.z);
+		// } else {
+		// String name = this.resource().basename();
+		// if ((Config.dropSoil && name.equals("soil")))
+		// this.wdgmsg("drop", Coord.z);
+		// if (curs != null && curs.name.equals("gfx/hud/curs/mine")
+		// && (Config.dropMinedStones && Config.mineablesStone.contains(name)
+		// || Config.dropMinedOre && Config.mineablesOre.contains(name)
+		// || Config.dropMinedOrePrecious && Config.mineablesOrePrecious.contains(name)
+		// || Config.dropMinedCurios && Config.mineablesCurios.contains(name)))
+		// this.wdgmsg("drop", Coord.z);
+		// }
 	}
 }

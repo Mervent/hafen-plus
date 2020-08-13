@@ -136,6 +136,22 @@ public class Speedget extends Widget {
 			}
 			return (true);
 		}
+		if (ev.isShiftDown()) {
+			int c = ev.getKeyCode();
+			if (c == KeyEvent.VK_Q) {
+				set(0);
+				return true;
+			} else if (c == KeyEvent.VK_W) {
+				set(1);
+				return true;
+			} else if (c == KeyEvent.VK_E) {
+				set(2);
+				return true;
+			} else if (c == KeyEvent.VK_R) {
+				set(3);
+				return true;
+			}
+		}
 		for (int i = 0; i < kb_speeds.length; i++) {
 			if (kb_speeds[i].key().match(ev)) {
 				set(i);

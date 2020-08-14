@@ -32,12 +32,14 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 
 public class Text {
-	public static final Font serif = new Font("Serif", Font.PLAIN, 10);
-	public static final Font sans = new Font("Sans", Font.PLAIN, 10);
-	public static final Font mono = new Font("Monospaced", Font.PLAIN, 10);
+	public static final int FontSize = 12;
+	public static final Font serif = new Font("Serif", Font.PLAIN, FontSize);
+	public static final Font sans = new Font("Sans", Font.PLAIN, FontSize);
+	public static final Font mono = new Font("Monospaced", Font.PLAIN, FontSize);
 	public static final Font fraktur = Resource.local().loadwait("ui/fraktur").layer(Resource.Font.class).font;
 	public static final Font dfont = sans;
 	public static final Foundry std;
+	public static final Foundry std10;
 	public final BufferedImage img;
 	public final String text;
 	private Tex tex;
@@ -45,7 +47,8 @@ public class Text {
 	public static final Color white = Color.WHITE;
 
 	static {
-		std = new Foundry(sans, 10);
+		std = new Foundry(sans, FontSize);
+		std10 = new Foundry(sans, 10);
 	}
 
 	public boolean equals(String target) {
@@ -275,12 +278,20 @@ public class Text {
 		return (std.render(text, c));
 	}
 
+	public static Line rendersmall(String text, Color c) {
+		return (std10.render(text, c));
+	}
+
 	public static Line renderf(Color c, String text, Object... args) {
 		return (std.render(String.format(text, args), c));
 	}
 
 	public static Line render(String text) {
 		return (render(text, Color.WHITE));
+	}
+
+	public static Line rendersmall(String text) {
+		return (rendersmall(text, Color.WHITE));
 	}
 
 	public Tex tex() {

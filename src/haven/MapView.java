@@ -1895,6 +1895,10 @@ public class MapView extends PView implements DTarget, Console.Directory {
 	public boolean drop(final Coord cc, Coord ul) {
 		new Hittest(cc) {
 			public void hit(Coord pc, Coord2d mc, ClickData inf) {
+				if (!ui.modctrl) {
+					wdgmsg("click", pc, mc.floor(posres), 1, 0);
+					return;
+				}
 				wdgmsg("drop", pc, mc.floor(posres), ui.modflags());
 			}
 		}.run();

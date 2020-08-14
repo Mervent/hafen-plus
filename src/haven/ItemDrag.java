@@ -86,7 +86,7 @@ public class ItemDrag extends WItem {
 	}
 
 	public boolean mousedown(Coord c, int button) {
-		if (ui.modctrl) {
+		if (ui.modmeta && !ui.modshift) {
 			/* XXX */
 			GameUI gui = getparent(GameUI.class);
 			if ((gui != null) && (gui.map != null)) {

@@ -40,6 +40,8 @@ public class Text {
 	public static final Font dfont = sans;
 	public static final Foundry std;
 	public static final Foundry std10;
+	public static final Foundry std11;
+	public static final Foundry std12;
 	public final BufferedImage img;
 	public final String text;
 	private Tex tex;
@@ -49,6 +51,8 @@ public class Text {
 	static {
 		std = new Foundry(sans, FontSize);
 		std10 = new Foundry(sans, 10);
+		std11 = new Foundry(sans, 11);
+		std12 = new Foundry(sans, 12);
 	}
 
 	public boolean equals(String target) {
@@ -189,6 +193,28 @@ public class Text {
 			return (new Line(text, img, m));
 		}
 
+		public Line renderstroked(String text, Color c, Color stroke) {
+			Coord sz = strsize(text);
+			if (sz.x < 1)
+				sz = sz.add(1, 0);
+			sz = sz.add(2, 0);
+			BufferedImage img = TexI.mkbuf(sz);
+			Graphics g = img.createGraphics();
+			if (aa)
+				Utils.AA(g);
+			g.setFont(font);
+			FontMetrics m = g.getFontMetrics();
+			g.setColor(stroke);
+			g.drawString(text, 0, m.getAscent());
+			g.drawString(text, 2, m.getAscent());
+			g.drawString(text, 1, m.getAscent() - 1);
+			g.drawString(text, 1, m.getAscent() + 1);
+			g.setColor(c);
+			g.drawString(text, 1, m.getAscent());
+			g.dispose();
+			return (new Line(text, img, m));
+		}
+
 		public Line render(String text) {
 			return (render(text, defcol));
 		}
@@ -278,10 +304,6 @@ public class Text {
 		return (std.render(text, c));
 	}
 
-	public static Line rendersmall(String text, Color c) {
-		return (std10.render(text, c));
-	}
-
 	public static Line renderf(Color c, String text, Object... args) {
 		return (std.render(String.format(text, args), c));
 	}
@@ -290,8 +312,20 @@ public class Text {
 		return (render(text, Color.WHITE));
 	}
 
-	public static Line rendersmall(String text) {
-		return (rendersmall(text, Color.WHITE));
+	public static Line renderstroked(String text) {
+		return (renderstroked(text, Color.WHITE, Color.BLACK, std10));
+	}
+
+	public static Line renderstroked(String text, Foundry foundry) {
+		return (renderstroked(text, Color.WHITE, Color.BLACK, foundry));
+	}
+
+	public static Line renderstroked(String text, Color c, Color stroke) {
+		return (renderstroked(text, c, stroke, std10));
+	}
+
+	public static Line renderstroked(String text, Color c, Color stroke, Foundry foundry) {
+		return (foundry.renderstroked(text, c, stroke));
 	}
 
 	public Tex tex() {

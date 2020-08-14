@@ -178,9 +178,9 @@ public class WItem extends Widget implements DTarget {
 						int timeleft = (int) (itm.studytime * (1.0 - meter));
 						int hoursleft = timeleft / 60;
 						int minutesleft = timeleft - hoursleft * 60;
-						itm.metertex = Text.rendersmall(String.format("%d:%02d", hoursleft, minutesleft)).tex();
+						itm.metertex = Text.renderstroked(String.format("%d:%02d", hoursleft, minutesleft)).tex();
 					} else {
-						itm.metertex = Text.rendersmall(String.format("%d%%", (int) (meter * 100))).tex();
+						itm.metertex = Text.renderstroked(String.format("%d%%", (int) (meter * 100))).tex();
 					}
 					return minf::meter;
 				}

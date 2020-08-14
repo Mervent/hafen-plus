@@ -48,6 +48,10 @@ public class Text {
 		std = new Foundry(sans, 10);
 	}
 
+	public boolean equals(String target) {
+		return this.text == target;
+	}
+
 	public static class Line extends Text {
 		private final FontMetrics m;
 

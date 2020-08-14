@@ -103,6 +103,20 @@ public class Equipory extends Widget implements DTarget {
 		ava.color = null;
 	}
 
+	@Override
+	public void tick(double dt) {
+		if (ui.beltWndId == -1 && ((Window) parent).cap.equals("Equipment")) {
+			for (WItem itm[] : wmap.values()) {
+				try {
+					if (itm.length > 0 && itm[0].item.res.get().name.endsWith("belt"))
+						itm[0].mousedown(Coord.z, 3);
+				} catch (Loading l) {
+				}
+			}
+		}
+		super.tick(dt);
+	}
+
 	public static interface SlotInfo {
 		public int slots();
 	}

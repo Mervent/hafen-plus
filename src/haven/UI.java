@@ -54,6 +54,7 @@ public class UI {
 	public GSettings gprefs = GSettings.load(true);
 	private boolean gprefsdirty = false;
 	public final ActAudio.Root audio = new ActAudio.Root();
+	public int beltWndId = -1;
 
 	{
 		lastevent = lasttick = Utils.rtime();
@@ -207,6 +208,13 @@ public class UI {
 
 	public void newwidget(int id, String type, int parent, Object[] pargs, Object... cargs)
 			throws InterruptedException {
+
+		// custom belt window
+		if (type.equals("wnd") && cargs[1].equals("Belt")) {
+			type = "wnd-belt";
+			beltWndId = id;
+		}
+
 		Widget.Factory f = Widget.gettype2(type);
 		synchronized (this) {
 			Widget wdg = f.create(this, cargs);
